@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.polimi.distributedsystems;
+package it.polimi.distributedsystems.loadbalancer;
 
 import java.rmi.server.UnicastRemoteObject;
 

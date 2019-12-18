@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.polimi.distributedsystems;
+package it.polimi.distributedsystems.loadbalancer;
 
 import java.rmi.RemoteException;
 
@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
  * @author 87068
  *
  */
-public class App {
+public class MainLoadBalancer {
 
 	/**
 	 * @param args
