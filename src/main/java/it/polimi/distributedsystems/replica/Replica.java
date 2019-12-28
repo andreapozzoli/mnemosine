@@ -4,8 +4,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 
-public class Replica extends UnicastRemoteObject implements ReplicaInterface{
-	public Replica() throws RemoteException{
+public class Replica implements ReplicaInterface{
+	public Replica(){
 		
 	}
 }
