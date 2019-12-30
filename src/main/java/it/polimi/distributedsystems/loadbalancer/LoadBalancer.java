@@ -14,14 +14,17 @@ import java.util.HashMap;
  */
 public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInterface {
 
-
+	//TODO: rendere singleton
 	private HashMap<String,Integer> workload;
+	private int historyCounter;
 
 	public LoadBalancer() throws RemoteException{
 		workload = new HashMap<>();
+		historyCounter = 0;
 	}
 
 	protected String getReplica() {
+		//Algoritmo di scelta.
 		return workload.keySet().iterator().next();
 	}
 
@@ -37,10 +40,12 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 	}
 
 	@Override
-	public void connectReplica(String ip, int port) {
+	public int connectReplica(String ip, int port) {
 		String name = ip+":"+port;
 		workload.put(name,0);
 		System.out.println("Replica "+ name + " is now connected");
+		historyCounter++;
+		return historyCounter;
 	}
 
 	@Override
