@@ -2,11 +2,16 @@ package it.polimi.distributedsystems.replica;
 
 import it.polimi.distributedsystems.loadbalancer.LoadBalancerInterface;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Scanner;
+import java.util.concurrent.*;
 
 public class MainReplica {
 
@@ -50,16 +55,44 @@ public class MainReplica {
 			System.exit(10);
 		}
 
-		//TODO: Open Socket and wait for clients
+		//Open Socket and wait for clients
+		ServerSocket serverSocket = null;
+		final ExecutorService threadExecutor = Executors.newFixedThreadPool(256);
 
-		//TODO: New Tread for wait input
-		boolean endSignal = false;
-		while(endSignal) {
+		try {
+			serverSocket = new ServerSocket(6970+myPort-35000);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(10);
+		}
+
+		int j = 0;
+		while(j < 2048) { // reachable end condition added
+			j++;
 			try {
-				lb.disconnectReplica(myIP,myPort);
-				endSignal = true;
-				registry.unbind("Rep_"+(myPort - 35000));
-			} catch (RemoteException | NotBoundException e) {
+				System.out.println("Waiting for the client request...");
+				Socket socket = serverSocket.accept();
+				threadExecutor.submit(new SocketClient(socket,rep));
+				System.out.println("client" + socket + " accepted");
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(10);
+			}
+		}
+
+		//New Tread for wait input
+		boolean endSignal = false;
+		while(!endSignal) {
+			System.out.println("Type Y to shutdown the replica: ");
+			Scanner scan = new Scanner(System.in);
+			Future<String> response = threadExecutor.submit((Callable<String>) scan::next);
+			try {
+				if(response.get().equalsIgnoreCase("Y")){
+					lb.disconnectReplica(myIP,myPort);
+					endSignal = true;
+					registry.unbind("Rep_"+(myPort - 35000));
+				}
+			} catch (RemoteException | NotBoundException | InterruptedException | ExecutionException e) {
 				endSignal = false;
 			}
 		}
