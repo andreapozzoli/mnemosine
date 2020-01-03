@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author 87068
@@ -26,15 +28,11 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 	}
 
 	protected String getReplica() {
-		int min = Collections.min(workload.values());
-		ArrayList<String> possibleChoice = new ArrayList<>();
-		for (String key : workload.keySet() ) {
-			if (workload.get(key) == min) {
-				possibleChoice.add(key);
-			}
-		}
-		int choice = ThreadLocalRandom.current().nextInt(0,possibleChoice.size());
-		return possibleChoice.get(choice);
+		//get the key(IP) of minimum value(number of users)
+		List<Map.Entry<String,Integer>> list = new ArrayList<Entry<String, Integer>>(workload.entrySet());
+		Collections.sort(list, (o1, o2) -> (o1.getValue() - o2.getValue()));
+		String IP_free=list.get(0).getKey();	
+		return IP_free;
 	}
 
 	protected boolean checkStatus(String id) {
