@@ -2,9 +2,6 @@ package it.polimi.distributedsystems.replica;
 
 import it.polimi.distributedsystems.loadbalancer.LoadBalancerInterface;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -17,10 +14,7 @@ public class MainReplica {
 
 	public static void main(String[] args) {
 
-		LoadBalancerInterface lb = null;
-		Registry registry = null;
 		Replica rep = null;
-
 		String myIP, registryIP;
 		int myPort = 0;
 
@@ -37,12 +31,12 @@ public class MainReplica {
 			// (here we are exporting the remote object to the stub)
 
 			// Binding the remote object (stub) in the registry
-			registry = LocateRegistry.getRegistry(registryIP,Registry.REGISTRY_PORT);
+			Registry registry = LocateRegistry.getRegistry(registryIP,Registry.REGISTRY_PORT);
 
-			lb = (LoadBalancerInterface) registry.lookup("LoadBalancer");
+			LoadBalancerInterface lb = (LoadBalancerInterface) registry.lookup("LoadBalancer");
 			myPort = 35000 + lb.getID(myIP);
 
-			rep= new Replica(myPort - 35000,registry);
+			rep= new Replica(myPort - 35000,registryIP);
 			lb.connectReplica(myIP,myPort);
 			registry.bind("Rep_"+(myPort - 35000), rep);
 			System.out.println("Replica N°" + (myPort - 35000) + " has been exposed");
@@ -51,52 +45,42 @@ public class MainReplica {
 
 		} catch (RemoteException | AlreadyBoundException | NotBoundException e){
 			System.err.println("Server exception: " + e.toString());
-			e.printStackTrace();
 			System.exit(10);
 		}
 
-		//Open Socket and wait for clients
-		ServerSocket serverSocket = null;
-		final ExecutorService threadExecutor = Executors.newFixedThreadPool(256);
+		final ExecutorService threadExecutor = Executors.newSingleThreadExecutor();
 
-		try {
-			serverSocket = new ServerSocket(6970+myPort-35000);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(10);
-		}
+		/*+++++++++++++++++*
+		 * SOCKET LISTENER *
+		 *+++++++++++++++++*/
+		Thread doHandshake = new Thread(new MainReplicaSocket(rep, myPort));
+		doHandshake.start();
 
-		int j = 0;
-		while(j < 2048) { // reachable end condition added
-			j++;
-			try {
-				System.out.println("Waiting for the client request...");
-				Socket socket = serverSocket.accept();
-				threadExecutor.submit(new SocketClient(socket,rep));
-				System.out.println("client" + socket + " accepted");
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(10);
-			}
-		}
-
+		/*++++++++++++++++*
+		 * INPUT LISTENER *
+		 *++++++++++++++++*/
 		//New Tread for wait input
 		boolean endSignal = false;
 		while(!endSignal) {
-			System.out.println("Type Y to shutdown the replica: ");
+			System.err.println("Type Y to shutdown the replica: ");
 			Scanner scan = new Scanner(System.in);
 			Future<String> response = threadExecutor.submit((Callable<String>) scan::next);
 			try {
 				if(response.get().equalsIgnoreCase("Y")){
+					Registry rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
+					LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
 					lb.disconnectReplica(myIP,myPort);
 					endSignal = true;
-					registry.unbind("Rep_"+(myPort - 35000));
+					rmi.unbind("Rep_"+(myPort - 35000));
 				}
-			} catch (RemoteException | NotBoundException | InterruptedException | ExecutionException e) {
+			} catch (RemoteException | InterruptedException | ExecutionException e) {
+				System.out.println("Registry not available, shutdown is not possible");
 				endSignal = false;
+			} catch ( NotBoundException ignored) {
+
 			}
 		}
-
+		System.exit(0);
 
 	}
 

@@ -38,7 +38,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>it.polimi.distributedsystems.App</mainClass>
+                            <mainClass>it.polimi.distributedsystems.loadbalancer.MainLoadBalancer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

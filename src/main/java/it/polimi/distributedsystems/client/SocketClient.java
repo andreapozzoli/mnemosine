@@ -1,6 +1,4 @@
-package it.polimi.distributedsystems.loadbalancer;
-
-import it.polimi.distributedsystems.loadbalancer.LoadBalancer;
+package it.polimi.distributedsystems.client;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -9,7 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 
-public class SocketClient implements Runnable  {
+public abstract class SocketClient implements Runnable  {
 
     /**
      * Socket to listen
@@ -23,16 +21,11 @@ public class SocketClient implements Runnable  {
      * Writer for the socket
      */
     private final PrintStream out;
-    /**
-     * LoadBalancer
-     */
-    private final LoadBalancer loadbalancer;
 
-    SocketClient(Socket socket, LoadBalancer lb) throws IOException {
+    public SocketClient(Socket socket) throws IOException {
         this.socket = socket;
         in = new Scanner(socket.getInputStream());
         out = new PrintStream(socket.getOutputStream());
-        loadbalancer = lb;
     }
 
     @Override
@@ -42,7 +35,7 @@ public class SocketClient implements Runnable  {
             do {
                 j++;
 
-                in.nextLine();
+                decode(in.nextLine());
 
             } while (j != Integer.MIN_VALUE);
         } catch (NoSuchElementException e) {
@@ -52,6 +45,16 @@ public class SocketClient implements Runnable  {
             } catch (IOException err) {
                 System.out.println("Impossible to close the connection!");
             }
+        }
+    }
+
+    protected abstract void decode(String input);
+
+
+    private synchronized void send(String response) {
+        if (!socket.isClosed()) {
+            out.println(response);
+            out.flush();
         }
     }
 }

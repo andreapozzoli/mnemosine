@@ -6,11 +6,8 @@ package it.polimi.distributedsystems.loadbalancer;
 import java.rmi.server.UnicastRemoteObject;
 
 import java.rmi.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.Map.Entry;
 
 /**
@@ -29,10 +26,9 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 
 	protected String getReplica() {
 		//get the key(IP) of minimum value(number of users)
-		List<Map.Entry<String,Integer>> list = new ArrayList<Entry<String, Integer>>(workload.entrySet());
-		Collections.sort(list, (o1, o2) -> (o1.getValue() - o2.getValue()));
-		String IP_free=list.get(0).getKey();	
-		return IP_free;
+		List<Entry<String,Integer>> list = new ArrayList<>(workload.entrySet());
+		list.sort((o1, o2) -> (o1.getValue() - o2.getValue()));
+		return list.get(0).getKey();
 	}
 
 	protected boolean checkStatus(String id) {
@@ -63,6 +59,9 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 
 	@Override
 	public int getID(String ip) {
+		if(workload.size() == 0) {
+			historyCounter = -1;
+		}
 		historyCounter++;
 		return historyCounter;
 	}

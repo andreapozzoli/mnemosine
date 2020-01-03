@@ -59,7 +59,7 @@ public class MainLoadBalancer {
 			try {
 				System.out.println("Waiting for the client request...");
 				Socket socket = serverSocket.accept();
-				threadExecutor.submit(new SocketClient(socket,obj));
+				threadExecutor.submit(new LBSocketClient(socket,obj));
 				System.out.println("client" + socket + " accepted");
 			} catch (IOException e) {
 				e.printStackTrace();
