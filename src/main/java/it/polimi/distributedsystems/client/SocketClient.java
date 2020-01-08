@@ -51,7 +51,7 @@ public abstract class SocketClient implements Runnable  {
     protected abstract void decode(String input);
 
 
-    private synchronized void send(String response) {
+    protected synchronized void send(String response) {
         if (!socket.isClosed()) {
             out.println(response);
             out.flush();

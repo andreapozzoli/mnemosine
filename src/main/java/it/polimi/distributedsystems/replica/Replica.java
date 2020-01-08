@@ -1,5 +1,7 @@
 package it.polimi.distributedsystems.replica;
 
+import it.polimi.distributedsystems.loadbalancer.LoadBalancerInterface;
+
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -16,13 +18,17 @@ public class Replica extends UnicastRemoteObject implements ReplicaInterface{
 	private ArrayList<Integer> vectorClock = new ArrayList<>();
 	private String registryIP;
 
+	private String ip;
 	private int id;
+	private int clients;
 
 	private HashMap<String,Integer> dataBase = new HashMap<>();
 
-	public Replica(int id, String registry) throws RemoteException {
+	public Replica(int id, String registry, String ip) throws RemoteException {
 		this.id = id;
+		this.ip = ip;
 		registryIP = registry;
+		clients = 0;
 	}
 
 	protected void collectNeighbors() {
@@ -104,4 +110,31 @@ public class Replica extends UnicastRemoteObject implements ReplicaInterface{
 		return dataBase;
 	}
 
+
+	protected void clientConnection() {
+		clients++;
+		Registry rmi = null;
+		try {
+			rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
+			LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
+			lb.setWorkload(ip+":"+id,clients);
+		} catch (RemoteException | NotBoundException e) {
+			System.out.println("Registry isn't available, save the status and moving forward");
+		}
+	}
+
+
+	protected int read(String variable) {
+		return dataBase.getOrDefault(variable, -1);
+	}
+
+	protected boolean write(String variable, int value) {
+		//TODO: need to discuss it with @Andrea
+		return true;
+	}
+
+	protected boolean delete(String variable) {
+		//TODO: need to discuss it with @Andrea
+		return true;
+	}
 }

@@ -36,7 +36,7 @@ public class MainReplica {
 			LoadBalancerInterface lb = (LoadBalancerInterface) registry.lookup("LoadBalancer");
 			myPort = 35000 + lb.getID(myIP);
 
-			rep= new Replica(myPort - 35000,registryIP);
+			rep= new Replica(myPort - 35000,registryIP,myIP);
 			lb.connectReplica(myIP,myPort);
 			registry.bind("Rep_"+(myPort - 35000), rep);
 			System.out.println("Replica N°" + (myPort - 35000) + " has been exposed");

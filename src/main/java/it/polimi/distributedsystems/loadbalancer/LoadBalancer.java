@@ -25,7 +25,7 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 	}
 
 	protected String getReplica() {
-		//get the key(IP) of minimum value(number of users)
+		//get the key(IP:PORT) of minimum value(number of users)
 		List<Entry<String,Integer>> list = new ArrayList<>(workload.entrySet());
 		list.sort((o1, o2) -> (o1.getValue() - o2.getValue()));
 		return list.get(0).getKey();
