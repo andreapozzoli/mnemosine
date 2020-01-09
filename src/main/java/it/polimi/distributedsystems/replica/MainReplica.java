@@ -36,12 +36,13 @@ public class MainReplica {
 			LoadBalancerInterface lb = (LoadBalancerInterface) registry.lookup("LoadBalancer");
 			myPort = 35000 + lb.getID(myIP);
 
-			rep= new Replica(myPort - 35000,registryIP,myIP);
+			rep = new Replica(myPort-35000,myIP);
+			ReplicaRmi repRmi = new ReplicaRmi(registryIP, rep);
 			lb.connectReplica(myIP,myPort);
-			registry.bind("Rep_"+(myPort - 35000), rep);
+			registry.bind("Rep_"+(myPort - 35000), repRmi);
 			System.out.println("Replica N°" + (myPort - 35000) + " has been exposed");
 
-			rep.collectNeighbors();
+			repRmi.collectNeighbors();
 
 		} catch (RemoteException | AlreadyBoundException | NotBoundException e){
 			System.err.println("Server exception: " + e.toString());
@@ -53,7 +54,7 @@ public class MainReplica {
 		/*+++++++++++++++++*
 		 * SOCKET LISTENER *
 		 *+++++++++++++++++*/
-		Thread doHandshake = new Thread(new MainReplicaSocket(rep, myPort));
+		Thread doHandshake = new Thread(new MainReplicaSocket(rep, myPort, registryIP));
 		doHandshake.start();
 
 		/*++++++++++++++++*

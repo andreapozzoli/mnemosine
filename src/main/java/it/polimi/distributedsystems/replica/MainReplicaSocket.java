@@ -4,6 +4,7 @@ package it.polimi.distributedsystems.replica;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.registry.Registry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -12,9 +13,11 @@ public class MainReplicaSocket implements Runnable {
     private ServerSocket serverSocket = null;
     private final ExecutorService threadExecutor = Executors.newFixedThreadPool(256);
     private final Replica rep;
+    private final String ip;
 
-    MainReplicaSocket(Replica replica, int port) {
+    MainReplicaSocket(Replica replica, int port, String registryIp) {
         rep = replica;
+        ip = registryIp;
         try {
             serverSocket = new ServerSocket(6970 + port - 35000);
         } catch (IOException e) {
@@ -31,7 +34,7 @@ public class MainReplicaSocket implements Runnable {
             try {
                 System.out.println("Waiting for the client request...");
                 Socket socket = serverSocket.accept();
-                threadExecutor.submit(new RepSocketClient(socket,rep));
+                threadExecutor.submit(new RepSocketClient(socket,rep,ip));
                 System.out.println("client" + socket + " accepted");
             } catch (IOException e) {
                 e.printStackTrace();

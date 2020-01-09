@@ -8,5 +8,5 @@ public interface ReplicaInterface extends Remote {
 
     int notifyConnection(int replicaId) throws RemoteException;
 
-    HashMap<String,Integer> getDB() throws RemoteException;
+    HashMap<String,Integer> pullDB() throws RemoteException;
 }

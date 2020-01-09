@@ -1,12 +1,17 @@
 package it.polimi.distributedsystems.replica;
 
 import it.polimi.distributedsystems.client.SocketClient;
+import it.polimi.distributedsystems.loadbalancer.LoadBalancerInterface;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.HashMap;
 
 
@@ -14,15 +19,19 @@ public class RepSocketClient extends SocketClient  {
 
     private final Replica replica;
     private final JSONObject errorMessage;
+    private int clients;
+    private String registryIP;
 
-    RepSocketClient(Socket socket, Replica rep) throws IOException {
+
+    RepSocketClient(Socket socket, Replica rep, String registry) throws IOException {
         super(socket);
+        registryIP = registry;
         replica = rep;
         errorMessage = new JSONObject(new HashMap<String,String>(){
             { put("method","ERROR"); put("content","Internal Server Error, Retry"); }
         });
 
-        replica.clientConnection();
+        clientConnection();
     }
 
     @Override
@@ -61,5 +70,17 @@ public class RepSocketClient extends SocketClient  {
 
         JSONObject res = new JSONObject(response);
         super.send(res.toJSONString());
+    }
+
+    protected void clientConnection() {
+        clients++;
+        Registry rmi = null;
+        try {
+            rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
+            LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
+            lb.setWorkload(replica.getIP()+":"+replica.getID(),clients);
+        } catch (RemoteException | NotBoundException e) {
+            System.out.println("Registry isn't available, save the status and moving forward");
+        }
     }
 }
