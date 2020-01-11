@@ -13,6 +13,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     private ArrayList<ReplicaInterface> neighbour = new ArrayList<>();
     private ArrayList<Integer> vectorClock = new ArrayList<>();
     private final Replica replica;
+    private ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> waitingWrites = new ArrayList<>();
 
     private String registryIP;
 
@@ -99,5 +100,111 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     @Override
     public HashMap<String, Integer> pullDB() throws RemoteException {
         return replica.getDB();
+    }
+    
+    //we need to review the call write by the client, because Replica cannot call ReplicaRmi
+    public void writeFromClient(String variable, int value, String type) {
+    	vectorClock.set(replica.getID(), vectorClock.get(replica.getID())+1);
+    	for (int j=0; j<neighbour.size(); j++) {
+    		boolean sent = false;
+    		if (neighbour.get(j)!=null) {
+    			while(!sent) {
+        			try {
+        				neighbour.get(j).writeFromReplica(variable, value, vectorClock, type, replica.getID());
+        				sent=true;
+        			}
+        			catch (RemoteException e) {
+        				System.out.println("retry with neighbour "+j);
+        			}
+        			catch (NotBoundException e) {	//probably wrong, but I need to separate rmi error from not existing replica
+        				neighbour.set(j, null);
+        				sent = true;
+        			}
+    			}
+    		}
+    	}
+    	if (type.equals("write")) {
+        	replica.write(variable, value);	
+    	}
+    	else if (type.equals("delete")) {
+    		replica.delete(variable);
+    	}
+    }
+    
+    @Override
+    public void writeFromReplica(String variable, int value, ArrayList<Integer> vector, String type, int senderId) {
+    	boolean missing = false;
+    	for (int k=0; k<neighbour.size(); k++) {
+    		if (neighbour.get(k)!=null) {
+    			if (k!=senderId) {
+    				if (vector.get(k)>vectorClock.get(k)) {
+    					missing = true;
+    				}
+    			}
+    			else {
+    				if (vector.get(k)!=vectorClock.get(k)+1) {
+    					missing = true;
+    				}
+    			}
+    		}
+    	}
+    	if (!missing) {
+    		if (type.equals("write")) {
+    			replica.write(variable, value);
+    		}
+    		else if (type.equals("delete")) {
+    			replica.delete(variable);
+    		}
+    		vectorClock.set(senderId, vectorClock.get(senderId)+1);
+    		boolean changed = true;
+    		while (changed) {
+    			changed = retryWrites();
+    		}
+    	}
+    	else {
+    		WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> waitingWrite = new WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>(variable, value, vector, type, senderId);
+    		waitingWrites.add(waitingWrite);
+    	}
+    }
+    
+    private boolean retryWrites () {
+    	boolean changed = false;
+    	if (waitingWrites.isEmpty()) {
+    		return false;
+    	}
+    	for (WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> ww : waitingWrites) {
+    		String variable = ww.getFirst();
+    		int value = ww.getSecond();
+    		ArrayList<Integer> vector = ww.getThird();
+    		String type = ww.getFourth();
+    		int senderId = ww.getFifth();
+    		boolean missing = false;
+        	for (int k=0; k<neighbour.size(); k++) {
+        		if (neighbour.get(k)!=null) {
+        			if (k!=senderId) {
+        				if (vector.get(k)>vectorClock.get(k)) {
+        					missing = true;
+        				}
+        			}
+        			else {
+        				if (vector.get(k)!=vectorClock.get(k)+1) {
+        					missing = true;
+        				}
+        			}
+        		}
+        	}
+        	if (!missing) {
+        		changed = true;
+        		if (type.equals("write")) {
+        			replica.write(variable, value);
+        		}
+        		else if (type.equals("delete")) {
+        			replica.delete(variable);
+        		}
+        		vectorClock.set(senderId, vectorClock.get(senderId)+1);
+        		waitingWrites.remove(ww);
+        	}
+    	}
+    	return changed;
     }
 }

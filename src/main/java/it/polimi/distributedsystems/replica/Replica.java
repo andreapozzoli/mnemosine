@@ -44,11 +44,13 @@ public class Replica {
 	}
 
 	protected boolean write(String variable, int value) {
+		dataBase.put(variable, value);
 		//TODO: need to discuss it with @Andrea
 		return true;
 	}
 
 	protected boolean delete(String variable) {
+		dataBase.remove(variable);
 		//TODO: need to discuss it with @Andrea
 		return true;
 	}
