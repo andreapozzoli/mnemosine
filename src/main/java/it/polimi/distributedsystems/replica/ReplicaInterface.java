@@ -12,5 +12,5 @@ public interface ReplicaInterface extends Remote {
 
     HashMap<String,Integer> pullDB() throws RemoteException;
     
-    void writeFromReplica(String variable, int value, ArrayList<Integer> vector, String type, int senderId) throws RemoteException, NotBoundException;
+    void writeFromReplica(String variable, int value, ArrayList<Integer> vector, String type, int senderId) throws RemoteException;
 }

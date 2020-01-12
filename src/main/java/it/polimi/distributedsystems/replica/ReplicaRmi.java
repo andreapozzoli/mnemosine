@@ -8,6 +8,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import it.polimi.distributedsystems.loadbalancer.LoadBalancerInterface;
+
 public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface {
 
     private ArrayList<ReplicaInterface> neighbour = new ArrayList<>();
@@ -114,12 +116,24 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         				sent=true;
         			}
         			catch (RemoteException e) {
-        				System.out.println("retry with neighbour "+j);
+        				Registry registry;
+        				boolean existing=true;
+						try {
+							registry = LocateRegistry.getRegistry(registryIP,Registry.REGISTRY_PORT);
+							LoadBalancerInterface lb = (LoadBalancerInterface) registry.lookup("LoadBalancer");
+							existing = lb.checkStatusReplica(j);
+						} catch (RemoteException | NotBoundException e1) {
+							System.out.println("RMI error, retry connection to loadBalancer");
+						}
+        				if (existing) {
+        					System.out.println("retry with neighbour "+j);
+        				}
+        				else {
+        					neighbour.set(j, null);
+            				sent = true;
+        				}
         			}
-        			catch (NotBoundException e) {	//probably wrong, but I need to separate rmi error from not existing replica
-        				neighbour.set(j, null);
-        				sent = true;
-        			}
+
     			}
     		}
     	}
@@ -203,6 +217,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         		}
         		vectorClock.set(senderId, vectorClock.get(senderId)+1);
         		waitingWrites.remove(ww);
+        		return true;
         	}
     	}
     	return changed;

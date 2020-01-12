@@ -21,6 +21,8 @@ public interface LoadBalancerInterface extends Remote {
     void setWorkload(String id, int connectedClients) throws RemoteException;
 
     int getID(String ip) throws RemoteException;
+    
+    boolean checkStatusReplica(int id) throws RemoteException;
 
 
 }

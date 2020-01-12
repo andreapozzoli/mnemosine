@@ -18,10 +18,12 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 
 	private HashMap<String,Integer> workload;
 	private int historyCounter;
+	private HashMap<Integer, String> replicaId;
 
 	public LoadBalancer() throws RemoteException{
 		workload = new HashMap<>();
 		historyCounter = -1;
+		replicaId = new HashMap<>();
 	}
 
 	protected String getReplica() {
@@ -34,8 +36,12 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 	protected boolean checkStatus(String id) {
 		return workload.containsKey(id);
 	}
-
-
+	
+	@Override
+	public boolean checkStatusReplica(int id) {
+		String key = replicaId.get(id);
+		return workload.containsKey(key);
+	}
 
 	@Override
 	public void disconnectReplica(String ip, int port){
@@ -48,6 +54,7 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 	public void connectReplica(String ip, int port) {
 		String name = ip+":"+port;
 		workload.put(name,0);
+		replicaId.put(port-6970, name);
 		System.out.println("Replica "+ name + " is now connected");
 	}
 
