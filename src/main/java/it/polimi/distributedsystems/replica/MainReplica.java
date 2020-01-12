@@ -12,6 +12,8 @@ import java.util.concurrent.*;
 
 public class MainReplica {
 
+	public static final int PORT_SHIFT = 6970;
+
 	public static void main(String[] args) {
 
 		Replica rep = null;
@@ -34,13 +36,13 @@ public class MainReplica {
 			Registry registry = LocateRegistry.getRegistry(registryIP,Registry.REGISTRY_PORT);
 
 			LoadBalancerInterface lb = (LoadBalancerInterface) registry.lookup("LoadBalancer");
-			myPort = 35000 + lb.getID(myIP);
+			myPort = PORT_SHIFT + lb.getID(myIP);
 
-			rep = new Replica(myPort-35000,myIP);
+			rep = new Replica(myPort,myIP);
 			ReplicaRmi repRmi = new ReplicaRmi(registryIP, rep);
-			lb.connectReplica(myIP,myPort);
-			registry.bind("Rep_"+(myPort - 35000), repRmi);
-			System.out.println("Replica N°" + (myPort - 35000) + " has been exposed");
+			lb.connectReplica(myIP, myPort);
+			registry.bind("Rep_"+(myPort - PORT_SHIFT), repRmi);
+			System.out.println("Replica N°" + (myPort - PORT_SHIFT) + " has been exposed");
 
 			repRmi.collectNeighbors();
 
@@ -72,7 +74,7 @@ public class MainReplica {
 					LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
 					lb.disconnectReplica(myIP,myPort);
 					endSignal = true;
-					rmi.unbind("Rep_"+(myPort - 35000));
+					rmi.unbind("Rep_"+(myPort - PORT_SHIFT));
 				}
 			} catch (RemoteException | InterruptedException | ExecutionException e) {
 				System.out.println("Registry not available, shutdown is not possible");

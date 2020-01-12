@@ -19,7 +19,7 @@ public class MainReplicaSocket implements Runnable {
         rep = replica;
         ip = registryIp;
         try {
-            serverSocket = new ServerSocket(6970 + port - 35000);
+            serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(10);

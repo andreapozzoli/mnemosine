@@ -8,6 +8,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashMap;
 
+import static it.polimi.distributedsystems.replica.MainReplica.PORT_SHIFT;
+
 
 public class Replica {
 
@@ -17,8 +19,8 @@ public class Replica {
 
 	private HashMap<String,Integer> dataBase = new HashMap<>();
 
-	public Replica(int id, String ip) {
-		this.id = id;
+	public Replica(int port, String ip) {
+		this.id = port - PORT_SHIFT;
 		this.ip = ip;
 	}
 
