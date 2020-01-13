@@ -42,8 +42,6 @@ public class Replica {
 
 
 	protected Integer read(String variable) {
-		System.out.println(variable);
-		System.out.println(dataBase.containsKey(variable));
 		return dataBase.getOrDefault(variable, null);
 	}
 

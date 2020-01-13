@@ -47,8 +47,6 @@ public class RepSocketClient extends SocketClient  {
                 case "READ" :
                     response.put("resource",obj.get("resource").toString());
                     response.put("content", replica.read(obj.get("resource").toString().replaceAll("\n", "")));
-                    System.out.println("we send ");
-                    System.out.println(replica.read(obj.get("resource").toString()));
                     break; 
                 case "WRITE" :
                     response.put("resource",obj.get("resource").toString());
