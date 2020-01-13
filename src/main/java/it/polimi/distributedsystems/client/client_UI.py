@@ -1,12 +1,12 @@
 # client_UI
 from tkinter import *
-from client import *
+from clientStick import *
 
 class client_UI:
 
     def __init__(self):
         # Create an object
-        client_obj = client()
+        client_obj = clientStick()
         # initialize Tk（），now we get a window
         root = Tk()
         self.createWindow(root)
