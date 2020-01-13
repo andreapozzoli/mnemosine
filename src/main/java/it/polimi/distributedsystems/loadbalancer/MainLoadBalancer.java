@@ -29,17 +29,15 @@ public class MainLoadBalancer {
 		try {
 			obj= new LoadBalancer();
 
-			// Exporting the object of implementation class
-			// (here we are exporting the remote object to the stub)
-
 			// Binding the remote object (stub) in the registry
 			Registry registry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
 			registry.bind("LoadBalancer",obj);
-			System.out.println("LoadBalancer exposed ");
+			System.out.println("LoadBalancer exposed");
 
 		} catch (RemoteException | AlreadyBoundException e){
 			System.err.println("Server exception: " + e.toString());
-			e.printStackTrace();
+			System.exit(500);
+
 		}
 
 		//Open Socket and wait for clients
@@ -49,8 +47,8 @@ public class MainLoadBalancer {
 		try {
 			serverSocket = new ServerSocket(6969);
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(10);
+			System.err.println("Cannot open the socket - Server exception: " + e.toString());
+			System.exit(500);
 		}
 
 		int j = 0;
@@ -62,8 +60,7 @@ public class MainLoadBalancer {
 				threadExecutor.submit(new LBSocketClient(socket,obj));
 				System.out.println("client" + socket + " accepted");
 			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(10);
+				System.err.println("There was a problem creating the socket");
 			}
 		}
 	}

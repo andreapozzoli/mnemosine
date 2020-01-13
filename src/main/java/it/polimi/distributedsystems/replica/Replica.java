@@ -1,11 +1,5 @@
 package it.polimi.distributedsystems.replica;
 
-import it.polimi.distributedsystems.loadbalancer.LoadBalancerInterface;
-
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.HashMap;
 
 import static it.polimi.distributedsystems.replica.MainReplica.PORT_SHIFT;
@@ -45,15 +39,11 @@ public class Replica {
 		return dataBase.getOrDefault(variable, null);
 	}
 
-	protected boolean write(String variable, int value) {
+	protected void write(String variable, int value) {
 		dataBase.put(variable, value);
-		//TODO: need to discuss it with @Andrea
-		return true;
 	}
 
-	protected boolean delete(String variable) {
+	protected void delete(String variable) {
 		dataBase.remove(variable);
-		//TODO: need to discuss it with @Andrea
-		return true;
 	}
 }

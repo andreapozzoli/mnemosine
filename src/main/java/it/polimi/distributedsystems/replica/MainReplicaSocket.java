@@ -4,7 +4,6 @@ package it.polimi.distributedsystems.replica;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.rmi.registry.Registry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,7 +20,7 @@ public class MainReplicaSocket implements Runnable {
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("There was a problem creating the listening socket, I'm shutting down");
             System.exit(10);
         }
     }
@@ -37,8 +36,7 @@ public class MainReplicaSocket implements Runnable {
                 threadExecutor.submit(new RepSocketClient(socket,rep,ip));
                 System.out.println("client" + socket + " accepted");
             } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(10);
+                System.err.println("There was a problem creating the socket");
             }
         }
     }

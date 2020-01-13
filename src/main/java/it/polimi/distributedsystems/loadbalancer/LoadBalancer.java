@@ -10,6 +10,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.Map.Entry;
 
+import static it.polimi.distributedsystems.replica.MainReplica.PORT_SHIFT;
+
 /**
  * @author 87068
  *
@@ -18,20 +20,16 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 
 	private HashMap<String,Integer> workload;
 	private int historyCounter;
-	private HashMap<Integer, String> replicaId;
 
 	public LoadBalancer() throws RemoteException{
 		workload = new HashMap<>();
 		historyCounter = -1;
-		replicaId = new HashMap<>();
 	}
 
 	protected String getReplica() {
 		//get the key(IP:PORT) of minimum value(number of users)
 		List<Entry<String,Integer>> list = new ArrayList<>(workload.entrySet());
 		list.sort((o1, o2) -> (o1.getValue() - o2.getValue()));
-		System.out.print("list is ");
-		System.out.println(list);
 		return list.get(0).getKey();
 	}
 
@@ -41,29 +39,35 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 	
 	@Override
 	public boolean checkStatusReplica(int id) {
-		String key = replicaId.get(id);
-		return workload.containsKey(key);
+		String searchID = ":" + (id + PORT_SHIFT);
+		for(String key: workload.keySet()) {
+			if(key.contains(searchID)){
+				return true;
+			}
+		}
+		System.out.println("Someone search for Rep_"+ id +" but it is not online");
+		return false;
+
 	}
 
 	@Override
 	public void disconnectReplica(String ip, int port){
 		String name = ip+":"+port;
 		workload.remove(name);
-		System.out.println("Replica "+ name + " is shutting down");
+
 	}
 
 	@Override
 	public void connectReplica(String ip, int port) {
 		String name = ip+":"+port;
 		workload.put(name,0);
-		replicaId.put(port-6970, name);
 		System.out.println("Replica "+ name + " is now connected");
 	}
 
 	@Override
-	public void setWorkload(String id) {
+	public void setWorkload(String id, int var) {
 		workload.putIfAbsent(id, 0);		
-		workload.replace(id,workload.get(id)+1);
+		workload.replace(id,workload.get(id)+var);
 		System.out.println("Replica "+ id + " has now "+ workload.get(id) +" connected client");
 	}
 

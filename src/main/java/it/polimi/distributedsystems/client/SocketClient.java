@@ -43,6 +43,7 @@ public abstract class SocketClient implements Runnable  {
         } catch (NoSuchElementException e) {
             try {
                 socket.close();
+                close();
                 System.out.println("Socket is closed");
             } catch (IOException err) {
                 System.out.println("Impossible to close the connection!");
@@ -51,6 +52,8 @@ public abstract class SocketClient implements Runnable  {
     }
 
     protected abstract void decode(String input);
+
+    protected abstract void close();
 
 
     protected synchronized void send(String response) {

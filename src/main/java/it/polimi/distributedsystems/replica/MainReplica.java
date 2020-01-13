@@ -48,7 +48,7 @@ public class MainReplica {
 
 		} catch (RemoteException | AlreadyBoundException | NotBoundException e){
 			System.err.println("Server exception: " + e.toString());
-			System.exit(10);
+			System.exit(500);
 		}
 
 		final ExecutorService threadExecutor = Executors.newSingleThreadExecutor();
@@ -79,9 +79,7 @@ public class MainReplica {
 			} catch (RemoteException | InterruptedException | ExecutionException e) {
 				System.out.println("Registry not available, shutdown is not possible");
 				endSignal = false;
-			} catch ( NotBoundException ignored) {
-
-			}
+			} catch ( NotBoundException ignored){};
 		}
 		System.exit(0);
 

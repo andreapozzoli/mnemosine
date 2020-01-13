@@ -37,7 +37,6 @@ public class LBSocketClient extends SocketClient  {
                 case "CONNECT" :
                     response.put("resource","ip");
                     response.put("content",String.valueOf(loadBalancer.getReplica()));
-                   
                     break;
                 case "CHECK" :
                     response.put("resource",obj.get("resource").toString());
@@ -54,5 +53,10 @@ public class LBSocketClient extends SocketClient  {
 
         JSONObject res = new JSONObject(response);
         super.send(res.toJSONString());
+    }
+
+    @Override
+    protected void close() {
+        //Not implemented
     }
 }
