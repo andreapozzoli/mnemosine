@@ -32,10 +32,12 @@ public class LBSocketClient extends SocketClient  {
 
         try {
             JSONObject obj = (JSONObject) jsonParser.parse(input);
+            
             switch (obj.get("method").toString()) {
                 case "CONNECT" :
                     response.put("resource","ip");
                     response.put("content",String.valueOf(loadBalancer.getReplica()));
+                   
                     break;
                 case "CHECK" :
                     response.put("resource",obj.get("resource").toString());

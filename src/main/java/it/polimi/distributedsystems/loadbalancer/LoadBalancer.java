@@ -30,6 +30,8 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 		//get the key(IP:PORT) of minimum value(number of users)
 		List<Entry<String,Integer>> list = new ArrayList<>(workload.entrySet());
 		list.sort((o1, o2) -> (o1.getValue() - o2.getValue()));
+		System.out.print("list is ");
+		System.out.println(list);
 		return list.get(0).getKey();
 	}
 
@@ -60,6 +62,7 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 
 	@Override
 	public void setWorkload(String id) {
+		workload.putIfAbsent(id, 0);		
 		workload.replace(id,workload.get(id)+1);
 		System.out.println("Replica "+ id + " has now "+ workload.get(id) +" connected client");
 	}

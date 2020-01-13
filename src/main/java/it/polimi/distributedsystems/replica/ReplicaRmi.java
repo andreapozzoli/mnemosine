@@ -104,8 +104,10 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         return replica.getDB();
     }
     
-    public int read(String variable) {
-		return replica.read(variable);
+    public String read(String variable) {
+    	System.out.print(variable);
+    	Integer read = replica.read(variable);
+    	return read==null ? "Not Found" : read.toString();
 	}
     
     public int getID(){ return replica.getID(); }

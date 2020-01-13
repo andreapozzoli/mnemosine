@@ -46,8 +46,10 @@ public class RepSocketClient extends SocketClient  {
             switch (obj.get("method").toString()) {
                 case "READ" :
                     response.put("resource",obj.get("resource").toString());
-                    response.put("content",String.valueOf(replica.read(obj.get("resource").toString())));
-                    break;
+                    response.put("content", replica.read(obj.get("resource").toString().replaceAll("\n", "")));
+                    System.out.println("we send ");
+                    System.out.println(replica.read(obj.get("resource").toString()));
+                    break; 
                 case "WRITE" :
                     response.put("resource",obj.get("resource").toString());
                     response.put("content",Boolean.toString(
@@ -56,7 +58,7 @@ public class RepSocketClient extends SocketClient  {
                     break;
                 case "DELETE" :
                     response.put("resource",obj.get("resource").toString());
-                    response.put("content",Boolean.toString(replica.writeFromClient(obj.get("resource").toString(), 0, "delete")));
+                    response.put("content",Boolean.toString(replica.writeFromClient(obj.get("resource").toString().replaceAll("\n", ""), 0, "delete")));
                     break;
                 default:
                     throw new ParseException(404,"No Method Found");
@@ -78,7 +80,7 @@ public class RepSocketClient extends SocketClient  {
         try {
             rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
             LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
-            lb.setWorkload(replica.getIP()+":"+replica.getID()+6970);
+            lb.setWorkload(replica.getIP()+":"+(replica.getID()+6970));
         } catch (RemoteException | NotBoundException e) {
             System.out.println("Registry isn't available, save the status and moving forward");
         }
