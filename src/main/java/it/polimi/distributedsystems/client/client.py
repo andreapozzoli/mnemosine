@@ -18,6 +18,7 @@ class client:
         try:
             Socket_lb.connect((self.ip_LB, self.port_LB))
         except ConnectionRefusedError:
+            text_ipReplica.delete(0.0, END)
             text_ipReplica.insert(END , 'Load Balancer is closed!\n')
             return
 
@@ -33,6 +34,7 @@ class client:
         recv_data = recv_data['content'].split(':')
         self.ip_replica = recv_data[0]
         self.port_replica = eval(recv_data[1])
+        text_ipReplica.delete(0.0, END)
         text_ipReplica.insert(END , self.ip_replica)
         Socket_lb.close()
 
@@ -77,8 +79,8 @@ class client:
 
         # Send request
         sendData = {'method' : 'READ',
-                    'resource' : self.ip ,
-                'content' : text_in.get()}
+                    'resource' : text_in.get('1.0', END) ,
+                'content' : self.ip}
         Socket_replica.send((json.dumps(sendData) + '\n').encode('utf-8'))
 
         # receive data
@@ -97,9 +99,12 @@ class client:
             return
 
         # Send request
+        keyValue = text_in.get('1.0', END).split(',')
+        key = keyValue[0]
+        value = keyValue[1]
         sendData = {'method': 'WRITE',
-                    'resource': self.ip,
-                    'content': text_in.get()}
+                    'resource': key,
+                    'content': value}
         Socket_replica.send((json.dumps(sendData) + '\n').encode('utf-8'))
 
         # receive data
@@ -119,8 +124,8 @@ class client:
 
         # Send request
         sendData = {'method': 'DELETE',
-                    'resource': self.ip,
-                    'content': text_in.get()}
+                    'resource': text_in.get('1.0', END),
+                    'content': self.ip}
         Socket_replica.send((json.dumps(sendData) + '\n').encode('utf-8'))
 
         # receive data
