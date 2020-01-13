@@ -104,8 +104,15 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         return replica.getDB();
     }
     
-    //we need to review the call write by the client, because Replica cannot call ReplicaRmi
-    public void writeFromClient(String variable, int value, String type) {
+    public int read(String variable) {
+		return replica.read(variable);
+	}
+    
+    public int getID(){ return replica.getID(); }
+
+	public String getIP(){ return replica.getIP(); }
+    
+    public boolean writeFromClient(String variable, int value, String type) {
     	vectorClock.set(replica.getID(), vectorClock.get(replica.getID())+1);
     	for (int j=0; j<neighbour.size(); j++) {
     		boolean sent = false;
@@ -143,6 +150,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     	else if (type.equals("delete")) {
     		replica.delete(variable);
     	}
+    	return true;
     }
     
     @Override

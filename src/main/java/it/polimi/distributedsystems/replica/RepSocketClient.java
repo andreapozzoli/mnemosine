@@ -17,13 +17,13 @@ import java.util.HashMap;
 
 public class RepSocketClient extends SocketClient  {
 
-    private final Replica replica;
+    private final ReplicaRmi replica;
     private final JSONObject errorMessage;
     private int clients;
     private String registryIP;
 
 
-    RepSocketClient(Socket socket, Replica rep, String registry) throws IOException {
+    RepSocketClient(Socket socket, ReplicaRmi rep, String registry) throws IOException {
         super(socket);
         registryIP = registry;
         replica = rep;
@@ -51,12 +51,12 @@ public class RepSocketClient extends SocketClient  {
                 case "WRITE" :
                     response.put("resource",obj.get("resource").toString());
                     response.put("content",Boolean.toString(
-                            replica.write(obj.get("resource").toString(),Integer.parseInt(obj.get("content").toString()))
+                            replica.writeFromClient(obj.get("resource").toString(),Integer.parseInt(obj.get("content").toString().replaceAll("\n", "")), "write")
                     ));
                     break;
                 case "DELETE" :
                     response.put("resource",obj.get("resource").toString());
-                    response.put("content",Boolean.toString(replica.delete(obj.get("resource").toString())));
+                    response.put("content",Boolean.toString(replica.writeFromClient(obj.get("resource").toString(), 0, "delete")));
                     break;
                 default:
                     throw new ParseException(404,"No Method Found");
