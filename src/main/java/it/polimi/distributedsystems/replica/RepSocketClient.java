@@ -78,7 +78,7 @@ public class RepSocketClient extends SocketClient  {
         try {
             rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
             LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
-            lb.setWorkload(replica.getIP()+":"+replica.getID()+6970);
+            lb.setWorkload(replica.getIP()+":"+(replica.getID()+6970));
         } catch (RemoteException | NotBoundException e) {
             System.out.println("Registry isn't available, save the status and moving forward");
         }
