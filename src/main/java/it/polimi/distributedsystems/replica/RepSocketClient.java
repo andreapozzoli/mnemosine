@@ -1,7 +1,7 @@
 package it.polimi.distributedsystems.replica;
 
 import it.polimi.distributedsystems.client.SocketClient;
-import it.polimi.distributedsystems.loadbalancer.LoadBalancerInterface;
+import it.polimi.distributedsystems.loadbalancer.LoadBalanceInterface;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -86,7 +86,7 @@ public class RepSocketClient extends SocketClient  {
         Registry rmi;
         try {
             rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
-            LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
+            LoadBalanceInterface lb = (LoadBalanceInterface) rmi.lookup("LoadBalancer");
             lb.setWorkload(replica.getIP()+":"+(replica.getID()+PORT_SHIFT),variation);
         } catch (RemoteException | NotBoundException e) {
             System.out.println("Registry isn't available, my workload won't be registered");

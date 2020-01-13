@@ -1,6 +1,6 @@
 package it.polimi.distributedsystems.replica;
 
-import it.polimi.distributedsystems.loadbalancer.LoadBalancerInterface;
+import it.polimi.distributedsystems.loadbalancer.LoadBalanceInterface;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
@@ -13,6 +13,7 @@ import java.util.concurrent.*;
 public class MainReplica {
 
 	public static final int PORT_SHIFT = 6970;
+
 
 	public static void main(String[] args) {
 
@@ -29,14 +30,11 @@ public class MainReplica {
 		}
 
 		try {
-			// Exporting the object of implementation class
-			// (here we are exporting the remote object to the stub)
-
 			// Binding the remote object (stub) in the registry
 			Registry registry = LocateRegistry.getRegistry(registryIP,Registry.REGISTRY_PORT);
 
-			LoadBalancerInterface lb = (LoadBalancerInterface) registry.lookup("LoadBalancer");
-			myPort = PORT_SHIFT + lb.getID(myIP);
+			LoadBalanceInterface lb = (LoadBalanceInterface) registry.lookup("LoadBalancer");
+			myPort = PORT_SHIFT + lb.getID();
 
 			Replica rep = new Replica(myPort,myIP);
 			repRmi = new ReplicaRmi(registryIP, rep);
@@ -51,8 +49,6 @@ public class MainReplica {
 			System.exit(500);
 		}
 
-		final ExecutorService threadExecutor = Executors.newSingleThreadExecutor();
-
 		/*+++++++++++++++++*
 		 * SOCKET LISTENER *
 		 *+++++++++++++++++*/
@@ -62,6 +58,7 @@ public class MainReplica {
 		/*++++++++++++++++*
 		 * INPUT LISTENER *
 		 *++++++++++++++++*/
+		final ExecutorService threadExecutor = Executors.newSingleThreadExecutor();
 		//New Tread for wait input
 		boolean endSignal = false;
 		while(!endSignal) {
@@ -71,7 +68,7 @@ public class MainReplica {
 			try {
 				if(response.get().equalsIgnoreCase("Y")){
 					Registry rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
-					LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
+					LoadBalanceInterface lb = (LoadBalanceInterface) rmi.lookup("LoadBalancer");
 					lb.disconnectReplica(myIP,myPort);
 					endSignal = true;
 					rmi.unbind("Rep_"+(myPort - PORT_SHIFT));

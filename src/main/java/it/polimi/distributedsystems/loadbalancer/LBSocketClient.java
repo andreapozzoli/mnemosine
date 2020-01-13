@@ -12,10 +12,10 @@ import java.util.HashMap;
 
 public class LBSocketClient extends SocketClient  {
 
-    private final LoadBalancer loadBalancer;
+    private final LoadBalance loadBalancer;
     private final JSONObject errorMessage;
 
-    LBSocketClient(Socket socket, LoadBalancer lb) throws IOException {
+    LBSocketClient(Socket socket, LoadBalance lb) throws IOException {
         super(socket);
         loadBalancer = lb;
         errorMessage = new JSONObject(new HashMap<String,String>(){

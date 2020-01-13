@@ -21,7 +21,7 @@ public class MainReplicaSocket implements Runnable {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             System.err.println("There was a problem creating the listening socket, I'm shutting down");
-            System.exit(10);
+            System.exit(500);
         }
     }
 

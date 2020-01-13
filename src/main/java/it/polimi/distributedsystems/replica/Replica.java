@@ -7,13 +7,14 @@ import static it.polimi.distributedsystems.replica.MainReplica.PORT_SHIFT;
 
 public class Replica {
 
-	private String ip;
-	private int id;
-
+	private final String ip;
+	private final int id;
 
 	private HashMap<String,Integer> dataBase = new HashMap<>();
 
-	public Replica(int port, String ip) {
+
+
+	protected Replica(int port, String ip) {
 		this.id = port - PORT_SHIFT;
 		this.ip = ip;
 	}
@@ -32,8 +33,6 @@ public class Replica {
 			dataBase = db;
 		}
 	}
-
-
 
 	protected Integer read(String variable) {
 		return dataBase.getOrDefault(variable, null);

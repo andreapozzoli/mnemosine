@@ -7,7 +7,6 @@ import java.rmi.server.UnicastRemoteObject;
 
 import java.rmi.*;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.Map.Entry;
 
 import static it.polimi.distributedsystems.replica.MainReplica.PORT_SHIFT;
@@ -16,12 +15,12 @@ import static it.polimi.distributedsystems.replica.MainReplica.PORT_SHIFT;
  * @author 87068
  *
  */
-public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInterface {
+public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInterface {
 
 	private HashMap<String,Integer> workload;
 	private int historyCounter;
 
-	public LoadBalancer() throws RemoteException{
+	public LoadBalance() throws RemoteException{
 		workload = new HashMap<>();
 		historyCounter = -1;
 	}
@@ -72,7 +71,7 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 	}
 
 	@Override
-	public int getID(String ip) {
+	public int getID() {
 		if(workload.size() == 0) {
 			historyCounter = -1;
 		}

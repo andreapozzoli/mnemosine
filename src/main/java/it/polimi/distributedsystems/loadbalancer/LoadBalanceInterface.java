@@ -10,7 +10,7 @@ import java.rmi.RemoteException;
  * @author 87068
  *
  */
-public interface LoadBalancerInterface extends Remote {
+public interface LoadBalanceInterface extends Remote {
 
     //ID = ip:port
 
@@ -20,7 +20,7 @@ public interface LoadBalancerInterface extends Remote {
 
     void setWorkload(String id, int variation) throws RemoteException;
 
-    int getID(String ip) throws RemoteException;
+    int getID() throws RemoteException;
     
     boolean checkStatusReplica(int id) throws RemoteException;
 

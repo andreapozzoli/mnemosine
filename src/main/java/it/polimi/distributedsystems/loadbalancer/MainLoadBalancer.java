@@ -24,10 +24,10 @@ public class MainLoadBalancer {
 	 * @param args, Few parameters
 	 */
 	public static void main(String[] args) {
-		LoadBalancer obj = null;
+		LoadBalance obj = null;
 
 		try {
-			obj= new LoadBalancer();
+			obj= new LoadBalance();
 
 			// Binding the remote object (stub) in the registry
 			Registry registry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
