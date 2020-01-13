@@ -59,9 +59,9 @@ public class LoadBalancer extends UnicastRemoteObject implements LoadBalancerInt
 	}
 
 	@Override
-	public void setWorkload(String id, int connectedClients) {
-		workload.replace(id,connectedClients);
-		System.out.println("Replica "+ id + " has now "+ connectedClients +" connected client");
+	public void setWorkload(String id) {
+		workload.replace(id,workload.get(id)+1);
+		System.out.println("Replica "+ id + " has now "+ workload.get(id) +" connected client");
 	}
 
 	@Override

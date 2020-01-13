@@ -19,7 +19,7 @@ public class RepSocketClient extends SocketClient  {
 
     private final ReplicaRmi replica;
     private final JSONObject errorMessage;
-    private int clients;
+    
     private String registryIP;
 
 
@@ -73,12 +73,12 @@ public class RepSocketClient extends SocketClient  {
     }
 
     protected void clientConnection() {
-        clients++;
+       
         Registry rmi = null;
         try {
             rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
             LoadBalancerInterface lb = (LoadBalancerInterface) rmi.lookup("LoadBalancer");
-            lb.setWorkload(replica.getIP()+":"+replica.getID(),clients);
+            lb.setWorkload(replica.getIP()+":"+replica.getID()+6970);
         } catch (RemoteException | NotBoundException e) {
             System.out.println("Registry isn't available, save the status and moving forward");
         }
