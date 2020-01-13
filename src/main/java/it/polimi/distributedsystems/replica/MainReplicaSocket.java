@@ -12,10 +12,10 @@ public class MainReplicaSocket implements Runnable {
 
     private ServerSocket serverSocket = null;
     private final ExecutorService threadExecutor = Executors.newFixedThreadPool(256);
-    private final Replica rep;
+    private final ReplicaRmi rep;
     private final String ip;
 
-    MainReplicaSocket(Replica replica, int port, String registryIp) {
+    MainReplicaSocket(ReplicaRmi replica, int port, String registryIp) {
         rep = replica;
         ip = registryIp;
         try {

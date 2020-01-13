@@ -16,7 +16,7 @@ public class MainReplica {
 
 	public static void main(String[] args) {
 
-		Replica rep = null;
+		ReplicaRmi repRmi = null;
 		String myIP, registryIP;
 		int myPort = 0;
 
@@ -38,8 +38,8 @@ public class MainReplica {
 			LoadBalancerInterface lb = (LoadBalancerInterface) registry.lookup("LoadBalancer");
 			myPort = PORT_SHIFT + lb.getID(myIP);
 
-			rep = new Replica(myPort,myIP);
-			ReplicaRmi repRmi = new ReplicaRmi(registryIP, rep);
+			Replica rep = new Replica(myPort,myIP);
+			repRmi = new ReplicaRmi(registryIP, rep);
 			lb.connectReplica(myIP, myPort);
 			registry.bind("Rep_"+(myPort - PORT_SHIFT), repRmi);
 			System.out.println("Replica N°" + (myPort - PORT_SHIFT) + " has been exposed");
@@ -56,7 +56,7 @@ public class MainReplica {
 		/*+++++++++++++++++*
 		 * SOCKET LISTENER *
 		 *+++++++++++++++++*/
-		Thread doHandshake = new Thread(new MainReplicaSocket(rep, myPort, registryIP));
+		Thread doHandshake = new Thread(new MainReplicaSocket(repRmi, myPort, registryIP));
 		doHandshake.start();
 
 		/*++++++++++++++++*
