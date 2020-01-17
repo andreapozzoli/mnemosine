@@ -16,7 +16,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     private ArrayList<Integer> vectorClock = new ArrayList<>();
 	private ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> waitingWrites = new ArrayList<>();
     private final Replica replica;
-
+    private ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> pendingSendings = new ArrayList<>();
     private String registryIP;
 
 
@@ -118,9 +118,14 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     	vectorClock.set(replica.getID(), vectorClock.get(replica.getID())+1);
     	for (int j=0; j<neighbour.size(); j++) {
     		boolean sent = false;
+    		int countrep=0;
     		if (neighbour.get(j)!=null) {
-    			while(!sent) {
+    			while(!sent && countrep<10) {
         			try {
+        				for (WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> ps : getPendingSendings(j)) {
+        					neighbour.get(j).writeFromReplica(ps.getFirst(), ps.getSecond(), ps.getThird(), ps.getFourth(), replica.getID());
+        					pendingSendings.remove(ps);
+        				}
         				neighbour.get(j).writeFromReplica(variable, value, vectorClock, type, replica.getID());
         				sent=true;
         			}
@@ -136,6 +141,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
 						}
         				if (existing) {
         					System.out.println("retry with neighbour "+j);
+        					countrep++;
         				}
         				else {
         					neighbour.set(j, null);
@@ -143,6 +149,10 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         				}
         			}
 
+    			}
+    			if (!sent) {
+    				WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> pendingSending = new WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>(variable, value, vectorClock, type, j);
+    				pendingSendings.add(pendingSending);
     			}
     		}
     	}
@@ -231,5 +241,15 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         	}
     	}
     	return changed;
+    }
+    
+    private ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> getPendingSendings (int repId){
+    	ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> repPendingSendings = new ArrayList<>();
+    	for (WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> ps : pendingSendings) {
+    		if (ps.getFifth()==repId) {
+    			repPendingSendings.add(ps);
+    		}
+    	}
+    	return repPendingSendings;
     }
 }
