@@ -1,6 +1,5 @@
 package it.polimi.distributedsystems.replica;
 
-import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;

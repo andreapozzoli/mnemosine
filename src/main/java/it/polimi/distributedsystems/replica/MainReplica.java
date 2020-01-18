@@ -7,6 +7,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.*;
 
@@ -39,8 +40,14 @@ public class MainReplica {
 			Replica rep = new Replica(myPort,myIP);
 			repRmi = new ReplicaRmi(registryIP, rep);
 			lb.connectReplica(myIP, myPort);
-			registry.bind("Rep_"+(myPort - PORT_SHIFT), repRmi);
-			System.out.println("Replica N°" + (myPort - PORT_SHIFT) + " has been exposed");
+
+			if (registryIP.equals(myIP)) {
+				registry.bind("Rep_"+(myPort - PORT_SHIFT), repRmi);
+				System.out.println("Replica N°" + (myPort - PORT_SHIFT) + " has been exposed");
+			} else {
+				ReplicaInterface exportedObj = (ReplicaInterface) UnicastRemoteObject.exportObject(repRmi, 0);
+				lb.bindRemoteReplica(exportedObj, (myPort - PORT_SHIFT));
+			}
 
 			repRmi.collectNeighbors();
 
@@ -76,7 +83,7 @@ public class MainReplica {
 			} catch (RemoteException | InterruptedException | ExecutionException e) {
 				System.out.println("Registry not available, shutdown is not possible");
 				endSignal = false;
-			} catch ( NotBoundException ignored){};
+			} catch ( NotBoundException ignored){}
 		}
 		System.exit(0);
 

@@ -15,8 +15,9 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     private ArrayList<ReplicaInterface> neighbour = new ArrayList<>();
     private ArrayList<Integer> vectorClock = new ArrayList<>();
 	private ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> waitingWrites = new ArrayList<>();
+	private ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> pendingSendings = new ArrayList<>();
+
     private final Replica replica;
-    private ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> pendingSendings = new ArrayList<>();
     private String registryIP;
 
 
@@ -110,9 +111,9 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     	return read==null ? "Not Found" : read.toString();
 	}
     
-    public int getID(){ return replica.getID(); }
+    protected int getID(){ return replica.getID(); }
 
-	public String getIP(){ return replica.getIP(); }
+	protected String getIP(){ return replica.getIP(); }
     
     public boolean writeFromClient(String variable, int value, String type) {
     	vectorClock.set(replica.getID(), vectorClock.get(replica.getID())+1);

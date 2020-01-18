@@ -12,12 +12,12 @@ import java.util.HashMap;
 
 public class LBSocketClient extends SocketClient  {
 
-    private final LoadBalance loadBalancer;
+    private final LoadBalance loadBalances;
     private final JSONObject errorMessage;
 
     LBSocketClient(Socket socket, LoadBalance lb) throws IOException {
         super(socket);
-        loadBalancer = lb;
+        loadBalances = lb;
         errorMessage = new JSONObject(new HashMap<String,String>(){
             { put("method","ERROR"); put("content","Internal Server Error, Retry"); }
         });
@@ -36,11 +36,11 @@ public class LBSocketClient extends SocketClient  {
             switch (obj.get("method").toString()) {
                 case "CONNECT" :
                     response.put("resource","ip");
-                    response.put("content",String.valueOf(loadBalancer.getReplica()));
+                    response.put("content",String.valueOf(loadBalances.getReplica()));
                     break;
                 case "CHECK" :
                     response.put("resource",obj.get("resource").toString());
-                    response.put("content",Boolean.toString(loadBalancer.checkStatus(obj.get("resource").toString())));
+                    response.put("content",Boolean.toString(loadBalances.checkStatus(obj.get("resource").toString())));
                     break;
                 default:
                     throw new ParseException(404,"No Method Found");

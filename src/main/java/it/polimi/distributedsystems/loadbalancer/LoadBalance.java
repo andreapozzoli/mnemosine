@@ -1,8 +1,9 @@
-/**
- * 
- */
 package it.polimi.distributedsystems.loadbalancer;
 
+import it.polimi.distributedsystems.replica.ReplicaInterface;
+
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,63 +17,48 @@ import java.util.concurrent.ThreadLocalRandom;
 import static it.polimi.distributedsystems.replica.MainReplica.PORT_SHIFT;
 
 /**
- * @author 87068
- *
+ * Used to manage replicas workload and RMI registry
  */
 public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInterface {
 
 	private HashMap<String,Integer> workload;
 	private int historyCounter;
-	
 	private File log = new File("backup.txt");
 
+	/**
+	 * @throws RemoteException When the connection drop
+	 */
 	public LoadBalance() throws RemoteException{
 		workload = new HashMap<>();
 		historyCounter = -1;
-		if (log.exists()) {
-			try {
-				Scanner myReader = new Scanner(log);
-				historyCounter = Integer.parseInt(myReader.nextLine().replaceAll("\n", ""));
-				while (myReader.hasNextLine()) {
-					String[] line = myReader.nextLine().replaceAll("\n", "").split(",");
-					workload.put(line[0], Integer.parseInt(line[1]));
-				}
-				myReader.close();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
-		else {
-			try {
-				log.createNewFile();
-			} catch (IOException e) {
-				System.out.println("Unable to create log file...");
-				System.out.println("Shutting down...Retry!!");
-				System.exit(500);
-			}
-		}
+
+		readLog();
 	}
 
+	/**
+	 * @return ID("ip:port") of an available replica with a unique random distribution.
+	 */
 	protected String getReplica() {
 		//get the key(IP:PORT) of minimum value(number of users)
 		List<Entry<String,Integer>> list = new ArrayList<>(workload.entrySet());
-		list.sort((o1, o2) -> (o1.getValue() - o2.getValue()));
+		list.sort(Comparator.comparingInt(Entry::getValue));
 		int i = list.size();
-		System.out.println(i);
+
 		double randNum = ThreadLocalRandom.current().nextDouble(0, 1);
-		System.out.println(randNum);
 		while (i>0) {
-			System.out.println(i);
 			if (randNum < 1.0/i) {
-				System.out.println("entrato");
+				System.out.println("Client ask for a partner, I give him replica n°"+ (i-1));
 				return list.get(i-1).getKey();
 			}
 			i--;
 		}
-		System.out.println("uscito");
 		return list.get(0).getKey();
 	}
 
+	/**
+	 * @param id Replica ID
+	 * @return True if the replica didn't disconnect from the LoadBalancer, False otherwise
+	 */
 	protected boolean checkStatus(String id) {
 		return workload.containsKey(id);
 	}
@@ -94,6 +80,7 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 	public void disconnectReplica(String ip, int port){
 		String name = ip+":"+port;
 		workload.remove(name);
+		System.out.println("Replica "+ name + " is now disconnected");
 		writeLog();
 	}
 
@@ -114,13 +101,51 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 	}
 
 	@Override
+	public void bindRemoteReplica(ReplicaInterface replica, int id) throws RemoteException, AlreadyBoundException {
+		Registry registry = LocateRegistry.getRegistry("localhost",Registry.REGISTRY_PORT);
+		registry.bind("Rep_"+id, replica);
+		System.out.println("Replica N°" + id + " has been exposed");
+	}
+
+	@Override
 	public int getID() {
 		if(workload.size() == 0) {
 			historyCounter = -1;
 		}
 		historyCounter++;
+		System.out.println("Replica got ID=" + historyCounter);
+
 		writeLog();
+
 		return historyCounter;
+	}
+
+
+	private void readLog() {
+		if (log.exists()) {
+			try {
+				Scanner myReader = new Scanner(log);
+				historyCounter = Integer.parseInt(myReader.nextLine().replaceAll("\n", ""));
+				while (myReader.hasNextLine()) {
+					String[] line = myReader.nextLine().replaceAll("\n", "").split(",");
+					workload.put(line[0], Integer.parseInt(line[1]));
+				}
+				myReader.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Founded a previous backup... Recovering Done!");
+		}
+		else {
+			try {
+				log.createNewFile();
+			} catch (IOException e) {
+				System.out.println("Unable to create log file...");
+				System.out.println("Shutting down...Retry!!");
+				System.exit(500);
+			}
+		}
+
 	}
 	
 	private void writeLog() {
@@ -129,13 +154,14 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 			fw.write(String.valueOf(historyCounter));
 			fw.flush();
 			for (Entry<String, Integer> entry : workload.entrySet()) {
-				fw.append("\n"+entry.getKey()+","+entry.getValue().toString());
+				fw.append("\n").append(entry.getKey()).append(",").append(entry.getValue().toString());
 				fw.flush();
 			}
 			fw.close();
 		} catch (IOException e) {
 			System.out.println("Impossible to update log file");
 		}
+		System.out.println("Log successfully updated");
 		
 	}
 }

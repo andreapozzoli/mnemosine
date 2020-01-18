@@ -1,8 +1,6 @@
 package it.polimi.distributedsystems.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.NoSuchElementException;
@@ -59,7 +57,6 @@ public abstract class SocketClient implements Runnable  {
     protected synchronized void send(String response) {
         if (!socket.isClosed()) {
             out.println(response);
-            out.flush();
         }
     }
 }

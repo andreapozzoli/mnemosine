@@ -17,6 +17,7 @@ public class MainReplicaSocket implements Runnable {
     MainReplicaSocket(ReplicaRmi replica, int port, String registryIp) {
         rep = replica;
         ip = registryIp;
+
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {

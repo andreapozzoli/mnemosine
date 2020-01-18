@@ -1,6 +1,3 @@
-/**
- * 
- */
 package it.polimi.distributedsystems.loadbalancer;
 
 import java.io.IOException;
@@ -13,25 +10,23 @@ import java.rmi.registry.Registry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
 /**
- * @author 87068
- *
+ * MAIN CLASS WHICH CREATE THE LOADBALANCER
  */
 public class MainLoadBalancer {
 
 	/**
-	 * @param args, Few parameters
+	 * @param args, args: [local machine IP]
 	 */
 	public static void main(String[] args) {
-		LoadBalance obj = null;
+		LoadBalance lb = null;
 
 		try {
-			obj= new LoadBalance();
+			lb = new LoadBalance();
 
 			// Binding the remote object (stub) in the registry
 			Registry registry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-			registry.bind("LoadBalancer",obj);
+			registry.bind("LoadBalancer",lb);
 			System.out.println("LoadBalancer exposed");
 
 		} catch (RemoteException | AlreadyBoundException e){
@@ -51,13 +46,13 @@ public class MainLoadBalancer {
 			System.exit(500);
 		}
 
-		int j = 0;
-		while(j < 2048) { // reachable end condition added
+		int j = Integer.MIN_VALUE;
+		while(j < Integer.MAX_VALUE) { // reachable end condition added
 			j++;
 			try {
 				System.out.println("Waiting for the client request...");
 				Socket socket = serverSocket.accept();
-				threadExecutor.submit(new LBSocketClient(socket,obj));
+				threadExecutor.submit(new LBSocketClient(socket,lb));
 				System.out.println("client" + socket + " accepted");
 			} catch (IOException e) {
 				System.err.println("There was a problem creating the socket");
