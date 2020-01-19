@@ -110,8 +110,9 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     	Integer read = replica.read(variable);
     	return read==null ? "Not Found" : read.toString();
 	}
-    
-    protected int getID(){ return replica.getID(); }
+
+    @Override
+    public int getID(){ return replica.getID(); }
 
 	protected String getIP(){ return replica.getIP(); }
     

@@ -79,9 +79,12 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 	@Override
 	public void disconnectReplica(String ip, int port){
 		String name = ip+":"+port;
-		workload.remove(name);
-		System.out.println("Replica "+ name + " is now disconnected");
-		writeLog();
+		int id = port - PORT_SHIFT;
+		if (workload.remove(name) != null)  {
+			unbindRemoteReplica(id);
+			System.out.println("Replica "+ name + " is now disconnected");
+			writeLog();
+		}
 	}
 
 	@Override
@@ -101,10 +104,22 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 	}
 
 	@Override
-	public void bindRemoteReplica(ReplicaInterface replica, int id) throws RemoteException, AlreadyBoundException {
+	public void bindRemoteReplica(ReplicaInterface replica) throws RemoteException, AlreadyBoundException {
 		Registry registry = LocateRegistry.getRegistry("localhost",Registry.REGISTRY_PORT);
-		registry.bind("Rep_"+id, replica);
-		System.out.println("Replica N°" + id + " has been exposed");
+		registry.bind("Rep_"+replica.getID(), replica);
+		System.out.println("Replica N°" + replica.getID() + " has been exposed");
+	}
+
+	private void unbindRemoteReplica(int id) {
+		Registry registry = null;
+		try {
+			registry = LocateRegistry.getRegistry("localhost", Registry.REGISTRY_PORT);
+			registry.unbind("Rep_"+ id);
+			System.out.println("Replica N°" + id + " is not attached anymore");
+		} catch (RemoteException | NotBoundException e) {
+			System.out.println("Registry not available, shutdown is not possible");
+		}
+		
 	}
 
 	@Override

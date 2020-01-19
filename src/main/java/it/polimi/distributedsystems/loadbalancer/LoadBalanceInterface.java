@@ -3,6 +3,7 @@ package it.polimi.distributedsystems.loadbalancer;
 import it.polimi.distributedsystems.replica.ReplicaInterface;
 
 import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -37,11 +38,11 @@ public interface LoadBalanceInterface extends Remote {
 
     /**
      * @param replica
-     * @param id
      * @throws RemoteException
      * @throws AlreadyBoundException
      */
-    void bindRemoteReplica(ReplicaInterface replica, int id) throws RemoteException, AlreadyBoundException;
+    void bindRemoteReplica(ReplicaInterface replica) throws RemoteException, AlreadyBoundException;
+
 
     /**
      * @return new generated unique ID

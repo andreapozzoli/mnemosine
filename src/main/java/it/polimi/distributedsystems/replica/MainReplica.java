@@ -19,6 +19,8 @@ public class MainReplica {
 	public static void main(String[] args) {
 
 		ReplicaRmi repRmi = null;
+		LoadBalanceInterface lb = null;
+
 		String myIP, registryIP;
 		int myPort = 0;
 
@@ -34,7 +36,7 @@ public class MainReplica {
 			// Binding the remote object (stub) in the registry
 			Registry registry = LocateRegistry.getRegistry(registryIP,Registry.REGISTRY_PORT);
 
-			LoadBalanceInterface lb = (LoadBalanceInterface) registry.lookup("LoadBalancer");
+			lb = (LoadBalanceInterface) registry.lookup("LoadBalancer");
 			myPort = PORT_SHIFT + lb.getID();
 
 			Replica rep = new Replica(myPort,myIP);
@@ -43,16 +45,22 @@ public class MainReplica {
 
 			if (registryIP.equals(myIP)) {
 				registry.bind("Rep_"+(myPort - PORT_SHIFT), repRmi);
-				System.out.println("Replica N°" + (myPort - PORT_SHIFT) + " has been exposed");
 			} else {
-				ReplicaInterface exportedObj = (ReplicaInterface) UnicastRemoteObject.exportObject(repRmi, 0);
-				lb.bindRemoteReplica(exportedObj, (myPort - PORT_SHIFT));
+				lb.bindRemoteReplica(repRmi);
 			}
+			System.out.println("Replica N°" + (myPort - PORT_SHIFT) + " has been exposed");
 
 			repRmi.collectNeighbors();
 
 		} catch (RemoteException | AlreadyBoundException | NotBoundException e){
 			System.err.println("Server exception: " + e.toString());
+			try {
+				assert lb != null;
+				lb.disconnectReplica(myIP, myPort);
+			} catch (RemoteException ee) {
+				System.err.println("Server exception: " + ee.toString());
+				System.exit(500);
+			}
 			System.exit(500);
 		}
 
@@ -75,10 +83,10 @@ public class MainReplica {
 			try {
 				if(response.get().equalsIgnoreCase("Y")){
 					Registry rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
-					LoadBalanceInterface lb = (LoadBalanceInterface) rmi.lookup("LoadBalancer");
+					lb = (LoadBalanceInterface) rmi.lookup("LoadBalancer");
 					lb.disconnectReplica(myIP,myPort);
 					endSignal = true;
-					rmi.unbind("Rep_"+(myPort - PORT_SHIFT));
+					System.out.println("Replica is now disconnected");
 				}
 			} catch (RemoteException | InterruptedException | ExecutionException e) {
 				System.out.println("Registry not available, shutdown is not possible");
