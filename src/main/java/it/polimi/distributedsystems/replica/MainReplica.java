@@ -34,6 +34,7 @@ public class MainReplica {
 
 		try {
 			localRegistry = LocateRegistry.getRegistry(myIP,Registry.REGISTRY_PORT);
+			localRegistry.lookup("Test");
 		} catch (RemoteException e) {
 			try {
 				localRegistry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
@@ -41,7 +42,7 @@ public class MainReplica {
 				System.out.println("Couldn't get or create the local Registry, I'm shutting down");
 				System.exit(500);
 			}
-		}
+		} catch (NotBoundException ignored) {}
 
 		try {
 			// Get the LoadBalancer
