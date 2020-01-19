@@ -21,6 +21,10 @@ public class MainLoadBalancer {
 	public static void main(String[] args) {
 		LoadBalance lb = null;
 
+		try{
+			System.setProperty("java.rmi.server.hostname", args[0]);
+		} catch (IndexOutOfBoundsException ignored){}
+
 		try {
 			lb = new LoadBalance();
 

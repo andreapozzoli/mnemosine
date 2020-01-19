@@ -27,6 +27,7 @@ public class MainReplica {
 		try {
 			nameServiceIP = args[0];
 			myIP = args[1];
+			System.setProperty("java.rmi.server.hostname", myIP);
 		} catch (IndexOutOfBoundsException e){
 			nameServiceIP = "localhost";
 			myIP = "localhost";
