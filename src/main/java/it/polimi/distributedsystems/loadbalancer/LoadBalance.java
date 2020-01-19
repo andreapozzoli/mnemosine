@@ -79,9 +79,7 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 	@Override
 	public void disconnectReplica(String ip, int port){
 		String name = ip+":"+port;
-		int id = port - PORT_SHIFT;
-		if (workload.remove(name) != null)  {
-			unbindRemoteReplica(id);
+		if(workload.remove(name) != null){
 			System.out.println("Replica "+ name + " is now disconnected");
 			writeLog();
 		}
@@ -90,7 +88,7 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 	@Override
 	public void connectReplica(String ip, int port) {
 		String name = ip+":"+port;
-		workload.put(name,0);
+		workload.putIfAbsent(name,0);
 		System.out.println("Replica "+ name + " is now connected");
 		writeLog();
 	}
@@ -104,25 +102,6 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 	}
 
 	@Override
-	public void bindRemoteReplica(ReplicaInterface replica) throws RemoteException, AlreadyBoundException {
-		Registry registry = LocateRegistry.getRegistry("localhost",Registry.REGISTRY_PORT);
-		registry.bind("Rep_"+replica.getID(), replica);
-		System.out.println("Replica N°" + replica.getID() + " has been exposed");
-	}
-
-	private void unbindRemoteReplica(int id) {
-		Registry registry = null;
-		try {
-			registry = LocateRegistry.getRegistry("localhost", Registry.REGISTRY_PORT);
-			registry.unbind("Rep_"+ id);
-			System.out.println("Replica N°" + id + " is not attached anymore");
-		} catch (RemoteException | NotBoundException e) {
-			System.out.println("Registry not available, shutdown is not possible");
-		}
-		
-	}
-
-	@Override
 	public int getID() {
 		if(workload.size() == 0) {
 			historyCounter = -1;
@@ -133,6 +112,18 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 		writeLog();
 
 		return historyCounter;
+	}
+
+	@Override
+	public String getIP(int id) {
+		String searchID = ":" + (id + PORT_SHIFT);
+		for(String key: workload.keySet()) {
+			if(key.contains(searchID)){
+				return key.split(":")[0];
+			}
+		}
+		System.out.println("Someone search for Rep_"+ id +" but it is not online");
+		return "NotFound";
 	}
 
 

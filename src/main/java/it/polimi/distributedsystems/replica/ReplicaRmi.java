@@ -8,6 +8,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import it.polimi.distributedsystems.loadbalancer.LoadBalance;
 import it.polimi.distributedsystems.loadbalancer.LoadBalanceInterface;
 
 public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface {
@@ -18,11 +19,11 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
 	private ArrayList<WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer>> pendingSendings = new ArrayList<>();
 
     private final Replica replica;
-    private String registryIP;
+    private String loadBalacerIP;
 
 
-    protected ReplicaRmi(String registryIp, Replica replica) throws RemoteException {
-        registryIP = registryIp;
+    protected ReplicaRmi(String loadbalancer, Replica replica) throws RemoteException {
+		loadBalacerIP = loadbalancer;
         this.replica = replica;
     }
 
@@ -30,17 +31,18 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         int id = replica.getID();
         int i = 0;
 
-        Registry rmi = null;
+        LoadBalanceInterface lb = null;
         try {
-            rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
-        } catch (RemoteException e) {
+            lb = (LoadBalanceInterface) LocateRegistry.getRegistry(loadBalacerIP, Registry.REGISTRY_PORT).lookup("LoadBalancer");
+        } catch (RemoteException | NotBoundException e) {
             System.out.println("Registry isn't available, I'm shutting down");
             System.exit(500);
         }
 
         for(; i < id; i++) {
             try {
-                ReplicaInterface replica = (ReplicaInterface) rmi.lookup("Rep_"+i);
+            	String regIP = lb.getIP(i);
+                ReplicaInterface replica = (ReplicaInterface) LocateRegistry.getRegistry(regIP, Registry.REGISTRY_PORT).lookup("Rep_"+i);
                 neighbour.add(replica);
                 vectorClock.add(replica.notifyConnection(id));
 
@@ -75,18 +77,20 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     @Override
     public int notifyConnection(int replicaId) {
 
-        Registry rmi = null;
-        try {
-            rmi = LocateRegistry.getRegistry(registryIP, Registry.REGISTRY_PORT);
-        } catch (RemoteException e) {
+		LoadBalanceInterface lb = null;
+		try {
+			lb = (LoadBalanceInterface) LocateRegistry.getRegistry(loadBalacerIP, Registry.REGISTRY_PORT).lookup("LoadBalancer");
+		} catch (RemoteException | NotBoundException e) {
             System.out.println("Registry isn't available, I'm shutting down");
             System.exit(500);
         }
 
         System.out.println("Rep_" + replicaId + " asked to connect");
+
         for(int i = neighbour.size(); i<=replicaId; i++) {
             try {
-                ReplicaInterface rep = (ReplicaInterface) rmi.lookup("Rep_"+i);
+				String regIP = lb.getIP(i);
+                ReplicaInterface rep = (ReplicaInterface) LocateRegistry.getRegistry(regIP, Registry.REGISTRY_PORT).lookup("Rep_"+i);
                 neighbour.add(rep);
                 vectorClock.add(rep.notifyConnection(replica.getID()));
             } catch (RemoteException | NotBoundException e) {
@@ -95,9 +99,11 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
                 vectorClock.add(0);
             }
         }
+
         System.out.println("DEBUG:");
         System.out.println(neighbour);
         System.out.println();
+
         return (vectorClock.contains(replica.getID())) ? vectorClock.get(replica.getID()) : 0;
     }
 
@@ -105,14 +111,16 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     public HashMap<String, Integer> pullDB() throws RemoteException {
         return replica.getDB();
     }
-    
+
+	@Override
+	public int getID(){ return replica.getID(); }
+
+
+
     public String read(String variable) {
     	Integer read = replica.read(variable);
     	return read==null ? "Not Found" : read.toString();
 	}
-
-    @Override
-    public int getID(){ return replica.getID(); }
 
 	protected String getIP(){ return replica.getIP(); }
     
@@ -135,7 +143,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         				Registry registry;
         				boolean existing=true;
 						try {
-							registry = LocateRegistry.getRegistry(registryIP,Registry.REGISTRY_PORT);
+							registry = LocateRegistry.getRegistry(loadBalacerIP,Registry.REGISTRY_PORT);
 							LoadBalanceInterface lb = (LoadBalanceInterface) registry.lookup("LoadBalancer");
 							existing = lb.checkStatusReplica(j);
 						} catch (RemoteException | NotBoundException e1) {
