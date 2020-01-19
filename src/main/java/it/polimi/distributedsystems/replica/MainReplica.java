@@ -33,16 +33,17 @@ public class MainReplica {
 		}
 
 		try {
-			localRegistry = LocateRegistry.getRegistry(myIP,Registry.REGISTRY_PORT);
-			localRegistry.lookup("Test");
+			localRegistry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+
 		} catch (RemoteException e) {
 			try {
-				localRegistry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+				localRegistry = LocateRegistry.getRegistry(myIP,Registry.REGISTRY_PORT);
+				//localRegistry.lookup("Test");
 			} catch (RemoteException ex) {
 				System.out.println("Couldn't get or create the local Registry, I'm shutting down");
 				System.exit(500);
 			}
-		} catch (NotBoundException ignored) {}
+		} //catch (NotBoundException ignored) {}
 
 		try {
 			// Get the LoadBalancer
