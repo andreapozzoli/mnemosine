@@ -23,6 +23,7 @@ public class MainReplica {
 		Registry localRegistry = null;
 
 		String myIP, nameServiceIP;
+		boolean registryOwner = false;
 		int myPort = 0;
 
 		try {
@@ -39,7 +40,7 @@ public class MainReplica {
 
 		try {
 			localRegistry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-
+			registryOwner = true;
 		} catch (RemoteException e) {
 			try {
 				localRegistry = LocateRegistry.getRegistry(myIP,Registry.REGISTRY_PORT);
@@ -105,6 +106,16 @@ public class MainReplica {
 				System.out.println("Registry not available, shutdown is not possible");
 				endSignal = false;
 			} catch ( NotBoundException ignored){}
+		}
+
+		if (registryOwner) {
+			Future<String> response = threadExecutor.submit(() -> {while(true){}});
+			try {
+				response.get();
+			} catch (InterruptedException | ExecutionException e) {
+				System.out.println("We got an internal server crash the local registry will be lost forever");
+				System.exit(500);
+			}
 		}
 		System.exit(0);
 
