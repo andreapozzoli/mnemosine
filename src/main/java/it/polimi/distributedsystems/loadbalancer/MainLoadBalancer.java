@@ -3,6 +3,7 @@ package it.polimi.distributedsystems.loadbalancer;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -19,11 +20,16 @@ public class MainLoadBalancer {
 	 * @param args, args: [local machine IP]
 	 */
 	public static void main(String[] args) {
+
 		LoadBalance lb = null;
 
 		try{
 			System.setProperty("java.rmi.server.hostname", args[0]);
-		} catch (IndexOutOfBoundsException ignored){}
+		} catch (IndexOutOfBoundsException e){
+			try {
+				System.out.println("RMI exported address not specified - DEFAULT: "+ java.net.InetAddress.getLocalHost());
+			} catch (UnknownHostException ignored) {}
+		}
 
 		try {
 			lb = new LoadBalance();

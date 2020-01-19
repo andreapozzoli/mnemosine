@@ -2,6 +2,7 @@ package it.polimi.distributedsystems.replica;
 
 import it.polimi.distributedsystems.loadbalancer.LoadBalanceInterface;
 
+import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -25,12 +26,15 @@ public class MainReplica {
 		int myPort = 0;
 
 		try {
-			nameServiceIP = args[0];
-			myIP = args[1];
+			myIP  = args[0];
+			nameServiceIP = args[1];
 			System.setProperty("java.rmi.server.hostname", myIP);
 		} catch (IndexOutOfBoundsException e){
 			nameServiceIP = "localhost";
 			myIP = "localhost";
+			try {
+				System.out.println("RMI exported address not specified - DEFAULT: "+ java.net.InetAddress.getLocalHost());
+			} catch (UnknownHostException ignored) {}
 		}
 
 		try {
@@ -39,12 +43,11 @@ public class MainReplica {
 		} catch (RemoteException e) {
 			try {
 				localRegistry = LocateRegistry.getRegistry(myIP,Registry.REGISTRY_PORT);
-				//localRegistry.lookup("Test");
 			} catch (RemoteException ex) {
 				System.out.println("Couldn't get or create the local Registry, I'm shutting down");
 				System.exit(500);
 			}
-		} //catch (NotBoundException ignored) {}
+		}
 
 		try {
 			// Get the LoadBalancer
