@@ -68,12 +68,15 @@ class clientStick:
     def dealWithErr_rp(self , text_out):
         text_out.insert(END ,'Cannot connect to your replica, But you need to stick to it~~~\n'
               'Don\'t worry, we will consult load balancer the status of your replica\n')
-        if self.check_lb(text_out) == "true":
+        status = self.check_lb(text_out)
+        if status == "true":
             # means the LB didn't received down message from replica, so we let user try again
             text_out.insert(END , 'Your replica seems still alive, try later!\n\n')
-        else:
+        elif status == "false":
             # means the replica has deleted itself, apply a new replica
             text_out.insert(END , 'Oops! Your former replica betrayed you! Try to get a new loyal replica!\n\n')
+        else:
+            text_out.insert(END , 'Unknown status '+ str(status) + '\n\n')
 
     def read_rp(self , text_in , text_out):
         # Send request

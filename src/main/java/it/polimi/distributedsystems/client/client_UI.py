@@ -23,9 +23,6 @@ class client_UI:
         # set the size of window changable
         root.resizable()
 
-    def f(self):
-        print('I\'m set up somehow!')
-
     def setTopFrame(self , root , client_obj):
         # At the top of the window, there is a frame to show the ip_replica and a button for CONNECT
         frame_top = Frame(root)
