@@ -47,7 +47,7 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 		double randNum = ThreadLocalRandom.current().nextDouble(0, 1);
 		while (i>0) {
 			if (randNum < 1.0/i) {
-				System.out.println("Client ask for a partner, I give him replica n°"+ (i-1));
+				System.out.println("Client ask for a partner, I give him replica on port"+ list.get(i-1).getKey().split(":")[1] );
 				return list.get(i-1).getKey();
 			}
 			i--;
@@ -60,7 +60,12 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 	 * @return True if the replica didn't disconnect from the LoadBalancer, False otherwise
 	 */
 	protected boolean checkStatus(String id) {
-		return workload.containsKey(id);
+		if (id.contains(":")) {
+			return workload.containsKey(id);
+		} else {
+			System.out.println("Client asked the status of his replica but the id is not valid, returning false");
+			return false;
+		}
 	}
 	
 	@Override
@@ -122,7 +127,7 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 				return key.split(":")[0];
 			}
 		}
-		System.out.println("Someone search for Rep_"+ id +" but it is not online");
+		System.out.println("Someone search for Registry IP for Rep_"+ id +" but it is not online");
 		return "NotFound";
 	}
 

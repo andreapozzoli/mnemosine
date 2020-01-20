@@ -21,4 +21,13 @@ public class WaitingWrite<T, U, V, W, Z> {
     public V getThird() { return third; }
     public W getFourth() {return fourth; }
     public Z getFifth() { return fifth; }
+
+    @Override
+    public String toString() {
+        return "Replica N°" + fifth +
+                "asked for " + fourth +
+                "(" + first +
+                ", " + second +
+                ")";
+    }
 }

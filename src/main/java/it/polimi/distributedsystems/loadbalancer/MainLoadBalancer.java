@@ -25,6 +25,7 @@ public class MainLoadBalancer {
 
 		try{
 			System.setProperty("java.rmi.server.hostname", args[0]);
+			System.out.println("RMI exported address: "+ args[0]);
 		} catch (IndexOutOfBoundsException e){
 			try {
 				System.out.println("RMI exported address not specified - DEFAULT: "+ java.net.InetAddress.getLocalHost());

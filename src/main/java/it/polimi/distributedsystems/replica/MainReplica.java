@@ -30,6 +30,7 @@ public class MainReplica {
 			myIP  = args[0];
 			nameServiceIP = args[1];
 			System.setProperty("java.rmi.server.hostname", myIP);
+			System.out.println("RMI exported address: "+ myIP);
 		} catch (IndexOutOfBoundsException e){
 			nameServiceIP = "localhost";
 			myIP = "localhost";
@@ -41,6 +42,7 @@ public class MainReplica {
 		try {
 			localRegistry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
 			registryOwner = true;
+			System.out.println("Creating Local RMI Registry.... Done!");
 		} catch (RemoteException e) {
 			try {
 				localRegistry = LocateRegistry.getRegistry(myIP,Registry.REGISTRY_PORT);
@@ -49,6 +51,8 @@ public class MainReplica {
 				System.exit(500);
 			}
 		}
+
+		System.out.println("Local registry is up and running!");
 
 		try {
 			// Get the LoadBalancer
@@ -61,7 +65,7 @@ public class MainReplica {
 			repRmi = new ReplicaRmi(nameServiceIP,rep);
 
 			localRegistry.bind("Rep_" + (myPort-PORT_SHIFT), repRmi);
-			System.out.println("Replica N°" + (myPort - PORT_SHIFT) + " has been exposed");
+			System.out.println("Replica N°" + (myPort - PORT_SHIFT) + " has been exposed on local machine");
 
 			lb.connectReplica(myIP, myPort);
 			repRmi.collectNeighbors();
@@ -107,8 +111,12 @@ public class MainReplica {
 				endSignal = false;
 			} catch ( NotBoundException ignored){}
 		}
+
 		doHandshake.interrupt();
+
 		if (registryOwner) {
+			System.out.println("Replica is down");
+			System.out.println("Running RMI Registry Instance... please don't stop.");
 			Future<String> response = threadExecutor.submit(() -> {while(true){}});
 			try {
 				response.get();
@@ -117,6 +125,8 @@ public class MainReplica {
 				System.exit(500);
 			}
 		}
+
+		System.out.println("All threads are stopped, GoodBye.");
 		System.exit(0);
 
 	}
