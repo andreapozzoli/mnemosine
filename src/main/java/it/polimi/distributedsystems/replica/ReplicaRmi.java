@@ -43,13 +43,11 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
             try {
             	String regIP = lb.getIP(i);
             	if (!(regIP.equals("NotFound"))) {
-            		System.out.println(regIP);
                     ReplicaInterface replica = (ReplicaInterface) LocateRegistry.getRegistry(regIP, Registry.REGISTRY_PORT).lookup("Rep_"+i);
                     neighbour.add(replica);
                     vectorClock.add(replica.notifyConnection(id));            		
             	}
             	else {
-            		System.out.println(regIP);
             		throw new NotBoundException();
             	}
 
@@ -58,7 +56,6 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
                 System.out.println("Registry isn't available, I'm shutting down");
                 System.exit(10);
             } catch (NotBoundException e) {
-            	System.out.println("ciao");
                 neighbour.add(null);
                 vectorClock.add(0); //Others should put a 0 when replica died or not waiting for message from deadReplicas
             }
@@ -139,7 +136,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     		boolean sent = false;
     		int countrep=0;
     		if (neighbour.get(j)!=null) {
-    			while(!sent && countrep<10) {
+    			while(!sent && countrep<2) {
         			try {
         				for (WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> ps : getPendingSendings(j)) {
         					neighbour.get(j).writeFromReplica(ps.getFirst(), ps.getSecond(), ps.getThird(), ps.getFourth(), replica.getID());
