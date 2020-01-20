@@ -107,7 +107,7 @@ public class MainReplica {
 				endSignal = false;
 			} catch ( NotBoundException ignored){}
 		}
-
+		doHandshake.interrupt();
 		if (registryOwner) {
 			Future<String> response = threadExecutor.submit(() -> {while(true){}});
 			try {

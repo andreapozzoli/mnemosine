@@ -42,14 +42,23 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         for(; i < id; i++) {
             try {
             	String regIP = lb.getIP(i);
-                ReplicaInterface replica = (ReplicaInterface) LocateRegistry.getRegistry(regIP, Registry.REGISTRY_PORT).lookup("Rep_"+i);
-                neighbour.add(replica);
-                vectorClock.add(replica.notifyConnection(id));
+            	if (!(regIP.equals("NotFound"))) {
+            		System.out.println(regIP);
+                    ReplicaInterface replica = (ReplicaInterface) LocateRegistry.getRegistry(regIP, Registry.REGISTRY_PORT).lookup("Rep_"+i);
+                    neighbour.add(replica);
+                    vectorClock.add(replica.notifyConnection(id));            		
+            	}
+            	else {
+            		System.out.println(regIP);
+            		throw new NotBoundException();
+            	}
+
 
             } catch (RemoteException e){
                 System.out.println("Registry isn't available, I'm shutting down");
                 System.exit(10);
             } catch (NotBoundException e) {
+            	System.out.println("ciao");
                 neighbour.add(null);
                 vectorClock.add(0); //Others should put a 0 when replica died or not waiting for message from deadReplicas
             }
@@ -104,7 +113,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
         System.out.println(neighbour);
         System.out.println();
 
-        return (vectorClock.contains(replica.getID())) ? vectorClock.get(replica.getID()) : 0;
+        return (vectorClock.size() >replica.getID()) ? vectorClock.get(replica.getID()) : 0;
     }
 
     @Override
