@@ -91,7 +91,7 @@ class clientStick:
 
         # receive data
         recv_data = json.loads(Socket_replica.recv(1024).decode('utf-8'))
-        Socket_replica.recv(1024)
+        #Socket_replica.recv(1024)
         content = recv_data['content']
         text_out.insert(END , content+'\n\n')
 
@@ -111,7 +111,7 @@ class clientStick:
 
         # receive data
         recv_data = json.loads(Socket_replica.recv(1024).decode('utf-8'))
-        Socket_replica.recv(1024)
+        #Socket_replica.recv(1024)
         content = recv_data['content']
         text_out.insert(END , content+'\n\n')
 
@@ -128,7 +128,7 @@ class clientStick:
 
         # receive data
         recv_data = json.loads(Socket_replica.recv(1024).decode('utf-8'))
-        Socket_replica.recv(1024)
+        #Socket_replica.recv(1024)
         content = recv_data['content']
         text_out.insert(END , content+'\n\n')
 
