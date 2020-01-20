@@ -4,7 +4,7 @@ from client_UI import *
 
 class clientStick:
     ip = ''
-    ip_LB = '172.20.10.10'
+    ip_LB = '192.168.43.190'
     port_LB = 6969
     ip_replica = ''
     port_replica = 0
@@ -56,7 +56,7 @@ class clientStick:
 
         # send request to loadBalancer
         sendData = {'method' : 'CHECK' ,
-                     'resource' : self.ip_replica}
+                     'resource' : self.ip_replica + ":" + self.port_replica}
         Socket_lb.send((json.dumps(sendData)+'\n').encode('utf-8'))
 
         # receive data
@@ -91,7 +91,7 @@ class clientStick:
 
         # receive data
         recv_data = json.loads(Socket_replica.recv(1024).decode('utf-8'))
-        #Socket_replica.recv(1024)
+        Socket_replica.recv(1024)
         content = recv_data['content']
         text_out.insert(END , content+'\n\n')
 
@@ -111,7 +111,7 @@ class clientStick:
 
         # receive data
         recv_data = json.loads(Socket_replica.recv(1024).decode('utf-8'))
-        #Socket_replica.recv(1024)
+        Socket_replica.recv(1024)
         content = recv_data['content']
         text_out.insert(END , content+'\n\n')
 
@@ -128,7 +128,7 @@ class clientStick:
 
         # receive data
         recv_data = json.loads(Socket_replica.recv(1024).decode('utf-8'))
-        #Socket_replica.recv(1024)
+        Socket_replica.recv(1024)
         content = recv_data['content']
         text_out.insert(END , content+'\n\n')
 
