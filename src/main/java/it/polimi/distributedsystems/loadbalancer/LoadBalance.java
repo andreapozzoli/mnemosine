@@ -100,10 +100,11 @@ public class LoadBalance extends UnicastRemoteObject implements LoadBalanceInter
 
 	@Override
 	public void setWorkload(String id, int var) {
-		workload.putIfAbsent(id, 0);		
-		workload.replace(id,workload.get(id)+var);
-		System.out.println("Replica "+ id + " has now "+ workload.get(id) +" connected client");
-		writeLog();
+		Integer res = workload.computeIfPresent(id, (key, value) -> value + var);
+		if (res != null) {
+			System.out.println("Replica "+ id + " has now "+ res +" connected client");
+			writeLog();
+		}
 	}
 
 	@Override

@@ -121,7 +121,7 @@ public class MainReplica {
 			System.out.println("Running RMI Registry Instance... please don't stop.");
 			Future<String> response = threadExecutor.submit(() -> {while(true){}});
 			try {
-				UnicastRemoteObject.unexportObject(repRmi,true);
+				UnicastRemoteObject.unexportObject(repRmi,false);
 				response.get();
 			} catch (InterruptedException | ExecutionException | NoSuchObjectException e) {
 				System.out.println("We got an internal server crash the local registry will be lost forever");
