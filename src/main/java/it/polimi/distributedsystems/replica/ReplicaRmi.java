@@ -191,7 +191,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
 
     			}
     			if (!sent) {
-    				WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> pendingSending = new WaitingWrite<>(variable, value, vectorClock, type, j);
+    				WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> pendingSending = new WaitingWrite<>(variable, value, new ArrayList<>(vectorClock), type, j);
     				pendingSendings.add(pendingSending);
     			}
     		}
@@ -228,15 +228,13 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
 			System.out.println("\n"+ type + " performed!\n");
 
     		vectorClock.set(senderId, vectorClock.get(senderId)+1);
-    		boolean changed = true;
-    		while (changed) {
-    			changed = retryWrites();
-    		}
 
     	} else {
     		WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> waitingWrite = new WaitingWrite<>(variable, value, vector, type, senderId);
     		waitingWrites.add(waitingWrite);
     	}
+
+		while (retryWrites());
 
 		System.out.println("We have now "+ waitingWrites.size() +" pending write to perfom");
     }
@@ -282,16 +280,12 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
 
     private boolean isMessageMissing(int sender, ArrayList<Integer> vector) {
 		for (int k=0; k<neighbour.size(); k++) {
-			if (neighbour.get(k)!=null) {
-				if (k!=sender) {
-					if (vector.get(k)>vectorClock.get(k)) {
-						return true;
-					}
+			if (neighbour.get(k) != null) {
+				if (k == sender && vector.get(k) != vectorClock.get(k)+1) {
+					return true;
 				}
-				else {
-					if (vector.get(k)!=vectorClock.get(k)+1) {
-						return true;
-					}
+				if (k != sender && vector.get(k) > vectorClock.get(k)) {
+					return true;
 				}
 			}
 		}

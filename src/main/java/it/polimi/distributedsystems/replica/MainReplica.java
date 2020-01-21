@@ -4,10 +4,12 @@ import it.polimi.distributedsystems.loadbalancer.LoadBalanceInterface;
 
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.*;
 
@@ -119,8 +121,9 @@ public class MainReplica {
 			System.out.println("Running RMI Registry Instance... please don't stop.");
 			Future<String> response = threadExecutor.submit(() -> {while(true){}});
 			try {
+				UnicastRemoteObject.unexportObject(repRmi,true);
 				response.get();
-			} catch (InterruptedException | ExecutionException e) {
+			} catch (InterruptedException | ExecutionException | NoSuchObjectException e) {
 				System.out.println("We got an internal server crash the local registry will be lost forever");
 				System.exit(500);
 			}
