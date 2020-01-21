@@ -230,7 +230,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     		vectorClock.set(senderId, vectorClock.get(senderId)+1);
 
     	} else {
-    		WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> waitingWrite = new WaitingWrite<>(variable, value, vector, type, senderId);
+    		WaitingWrite<String, Integer, ArrayList<Integer>, String, Integer> waitingWrite = new WaitingWrite<>(variable, value, new ArrayList<>(vector), type, senderId);
     		waitingWrites.add(waitingWrite);
     	}
 
