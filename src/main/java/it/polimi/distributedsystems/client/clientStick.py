@@ -58,7 +58,7 @@ class clientStick:
 
         # send request to loadBalancer
         sendData = {'method' : 'CHECK' ,
-                     'resource' : self.ip_replica + ":" + self.port_replica}
+                     'resource' : self.ip_replica + ":" + str(self.port_replica)}
         Socket_lb.send((json.dumps(sendData)+'\n').encode('utf-8'))
 
         # receive data
