@@ -39,8 +39,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
             System.exit(500);
         }
 
-		System.out.println("[CASUAL CONSISTENCY DEBUG]");
-		System.out.println("LoadBalancer loaded");
+		//System.out.println("LoadBalancer loaded");
 		System.out.println("Starting ask replicas for their vector clock...");
 
         for(; i < id; i++) {
@@ -94,7 +93,6 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
 			System.out.println(""+ vc.getKey() +" ->" + vc.getValue());
 		}
 		System.out.println();
-		System.out.println("[CASUAL CONSISTENCY DEBUG **END**]");
 
         System.out.println("Connected to " + (neighbour.size()-1) + " replicas");
         System.out.println("Vector Clock: " + vectorClock);
@@ -150,8 +148,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
 	protected String getIP(){ return replica.getIP(); }
     
     public boolean writeFromClient(String variable, int value, String type) {
-		System.out.println("[CASUAL CONSISTENCY DEBUG]");
-		System.out.println("Entering writeFromClient("+ variable +","+ value +","+ type +")");
+		//System.out.println("Entering writeFromClient("+ variable +","+ value +","+ type +")");
 
     	vectorClock.set(replica.getID(), vectorClock.get(replica.getID())+1);
 
@@ -203,14 +200,12 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     		replica.delete(variable);
     	}
 
-		System.out.println("[CASUAL CONSISTENCY DEBUG **END**]");
-
     	return true;
     }
     
     @Override
     public void writeFromReplica(String variable, int value, ArrayList<Integer> vector, String type, int senderId) {
-		System.out.println("Entering writeFromReplica("+ variable +","+ value +","+ vector +","+ type +","+ senderId +")");
+		//System.out.println("Entering writeFromReplica("+ variable +","+ value +","+ vector +","+ type +","+ senderId +")");
 		System.out.println("Checking VectorClock distance from the previous one");
 
 		boolean missing = isMessageMissing(senderId,vector);
@@ -240,7 +235,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
     }
     
     private boolean retryWrites () {
-		System.out.println("Entering retryWrite()");
+		//System.out.println("Entering retryWrite()");
 
     	if (waitingWrites.isEmpty()) {
 			System.out.println("There are not pending write to perform!");
