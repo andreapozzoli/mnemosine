@@ -174,7 +174,7 @@ public class ReplicaRmi extends UnicastRemoteObject implements ReplicaInterface 
 							LoadBalanceInterface lb = (LoadBalanceInterface) registry.lookup("LoadBalancer");
 							existing = lb.checkStatusReplica(j);
 						} catch (RemoteException | NotBoundException e1) {
-							System.out.println("RMI error, retry connection to loadBalancer");
+							System.out.println("loadBalancer not available, I assume a connection error");
 						}
         				if (existing) {
         					System.out.println("retry with neighbour "+j);
