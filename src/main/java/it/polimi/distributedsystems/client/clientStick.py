@@ -4,7 +4,7 @@ from client_UI import *
 
 class clientStick:
     ip = ''
-    ip_LB = '127.0.0.1'
+    ip_LB = '192.168.20.108'
     port_LB = 6969
     ip_replica = ''
     port_replica = 0
